@@ -129,7 +129,7 @@ int main (int argc, char ** argv)
     }
     printf ("Calling ellipse_ellipse_overlap.c\n\n");
 
-    int MAXITER = 1, i; //MAXITER: to compare the run-time of poly- and analytical solution.
+	int i;
     double t_se, t_fe;
     double t_sp, t_fp;
 
@@ -138,8 +138,6 @@ int main (int argc, char ** argv)
     float eps = 0.0001, err;
     float time_e = 0;
     float time_p = 0;
-    //float Re, Rp, Oe, Op;	
-
     char inputFile[100] = "";
     strcpy(inputFile,argv[1]);//"testcases.txt"; 
     char resultFile[100] = "results";
@@ -153,98 +151,7 @@ int main (int argc, char ** argv)
 
     FILE * f;  // inputFile
     FILE * gf; // resultFile
-    FILE * hf; // rootsFile
-    int isc, id;
-     int counter=0;
-     float meanErr = 0;
-    for(i=0;i<MAXITER;i++)
-    {
-        f = fopen(inputFile, "r");
-        gf = fopen(resultFile, "w");
-        fprintf(gf, "# id  areaEllipse1(pi.A.B)  areaEllipse2(pi.A.B)  OverlapAreaAnalytical  OverlapAreaPolynomial  err\n");
-        hf = fopen(rootsFile, "w");
-        if(f == NULL)
-        {
-            printf(">>>>>>>>> can not open file %s <<<<<<<<<<<\n", inputFile);
-            exit(0);
-        }
-        if(gf == NULL)
-        {
-            printf(">>>>>>>>> can not open file %s <<<<<<<<<<<\n", resultFile);
-            exit(0);
-        }       
-        if(hf == NULL)
-        {
-            printf(">>>>>>>>> can not open file %s <<<<<<<<<<<\n", rootsFile);
-            exit(0);
-        }
-        int convert_to_radian = 0;
-        //char dummy[255];
-        // the file starts with this line: #id A1 B1 H1 K1 PHI_1 A2 B2 H2 K2 PHI_2
-        //fgets(dummy, 255, f); //ignore first line. depends on file      
-        fprintf(hf, "#roots: id x0 \ty0 \tx1 \ty1  x2 \ty2 ...\n");
-        //fprintf(gf, "#no\t area_1\t\t area_2\t\t area_ellipse\t area_polygon\t err\n");
-       
-        while (1){
-            isc = fscanf(f,"%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",&id, &A1, &B1, &H1, &K1, &PHI_1, &A2, &B2, &H2, &K2, &PHI_2); 
-            
-            if(isc != 11){
-                printf("isc=%d\n",isc);
-                break;
-            }
-            //printf("id=%d,  A1=%f,  B1=%f,  H1=%f,  K1=%f,  PHI_1=%f,  A2=%f,  B2=%f,  H2=%f,  K2=%f,  PHI_2=%f\n",id, A1, B1, H1, K1, PHI_1, A2, B2, H2, K2, PHI_2);
-            /////////////////////////////////////////////////////////////////////////
-            if(convert_to_radian)
-            {
-                PHI_1 = PHI_1 *180.0/pi;
-                PHI_2 = PHI_2 *180.0/pi;
-            }
-            t_se = get_time();
-            double x[4], y[4];
-            int nroots;
-          
-            area = ellipse_ellipse_overlap (PHI_1, A1, B1, H1, K1,
-                                            PHI_2, A2, B2, H2, K2, x, y, &nroots, &rtn);
-          
-            t_fe = get_time();
-            time_e += (t_fe - t_se)*1000;
-            ellipse2poly(PHI_1, A1, B1, H1, K1, &poly);
-            ellipse2poly(PHI_2, A2, B2, H2, K2, &poly2);
-            t_sp = get_time();
-
-            areaPoly = getOverlapingAreaPoly(poly, poly2);
-            t_fp = get_time();
-            time_p += (t_fp - t_sp)*1000;
-                    
-            err = (fabs(areaPoly)<eps)?0.0:fabs(areaPoly-area)/areaPoly;
-            meanErr += err;
-            counter++;
-            //Re = area/(pi*A2*B2 + pi*A1*B1 - area);
-            //Rp = areaPoly/(pi*A2*B2 + pi*A1*B1 - areaPoly);
-                    
-            //Oe = area/(MIN(pi*A2*B2,pi*A1*B1));
-            //Op = areaPoly/(MIN(pi*A2*B2,pi*A1*B1));
-
-            // output roots
-            fprintf(hf, " %d ",id);
-            for(i=0; i<nroots; i++)
-                fprintf(hf, "  %f  %f  ", x[i], y[i]);
-            fprintf(hf, "\n");
-
-            //output results
-            fprintf(gf, "%d    %10.4f    %10.4f    %10.4f    %10.4f    %10.4f\n", id, pi*A1*B1, pi*A2*B2, area, areaPoly, err);
-        
-            //printf ("Case %d: area = %15.8f, return_value = %d, PolyArea = %15.8f (rel_err=%f)\n", id, area, rtn, areaPoly, err);
-            //printf("=====================================================================================\n");
-                    
-            ////////////////////////////////////////////////////////////////////////
-                    
-        }//while
-		
-	fclose(f);
-        fclose(gf);
-        fclose(hf);
-    }//MAXITER
+	
     printf("\nrun time:  Analytical solution = %8.4lf [ms] |  Polygon approximation = %8.4lf [ms]\n", time_e, time_p);
     fprintf(stderr, "%d  %f %f %f\n", n, time_e, time_p, meanErr/counter);
     return rtn; 
