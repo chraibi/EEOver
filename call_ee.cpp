@@ -25,7 +25,7 @@ using namespace boost::geometry;
 #define MIN(a,b) ((a<b)?a:b)
 #define MAX(a,b) ((a<b)?b:a)
 
-const int n = 4;
+const int n = 20;
 
 double ellipse_ellipse_overlap (double PHI_1, double A1, double B1, 
                                 double H1, double K1, double PHI_2, 
