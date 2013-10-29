@@ -4,7 +4,7 @@ the algorithm published in this [paper](http://arxiv.org/abs/1106.3787).
 
 
 
-## Usage: 
+### Usage: 
 - compile the code:
 `make`
 
@@ -16,7 +16,7 @@ This should produce an executable (overlap)
 	- **resultFile**: The naming is in this form `results_Day_Month_Year_Hour_Min_Second.txt`
 	- **rootFile**: The naming is in this form `roots_Day_Month_Year_Hour_Min_Second.txt`
 
-## Contents and Formats of files: 
+### Contents and Formats of files: 
 - the **inputFile** should be in the following format
 
 `id A1 B1 H1 K1 PHI_1 A2 B2 H2 K2 PHI_2`
@@ -35,12 +35,12 @@ This should produce an executable (overlap)
 
 this file is used by the plot-script (`plot.py`)
 
-## How to visualize the results: 
+### How to visualize the results: 
 > python plot.py inputFile rootsFile
 
 That would produce in the directory **./cases/** a couple of  png's
 
-## Requirements:
+### Requirements:
 - > [GSL](http://www.gnu.org/software/gsl/): to solve the quartic equations 
 - _(optional)_ > [Boost.polygon](http://www.boost.org/doc/libs/1_54_0/libs/polygon/doc/index.htm): to compare the results of this code, 
 the overlap-area of polygonized ellipses is calculated with Boost.polygon.
