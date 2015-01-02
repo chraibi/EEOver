@@ -155,8 +155,8 @@ int main (int argc, char ** argv)
     FILE * gf; // resultFile
     FILE * hf; // rootsFile
     int isc, id;
-     int counter=0;
-     float meanErr = 0;
+    int counter=0;
+    float meanErr = 0;
     for(i=0;i<MAXITER;i++)
     {
         f = fopen(inputFile, "r");
@@ -189,7 +189,7 @@ int main (int argc, char ** argv)
             isc = fscanf(f,"%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",&id, &A1, &B1, &H1, &K1, &PHI_1, &A2, &B2, &H2, &K2, &PHI_2); 
             
             if(isc != 11){
-                printf("isc=%d\n",isc);
+                // printf("isc=%d\n",isc);
                 break;
             }
             //printf("id=%d,  A1=%f,  B1=%f,  H1=%f,  K1=%f,  PHI_1=%f,  A2=%f,  B2=%f,  H2=%f,  K2=%f,  PHI_2=%f\n",id, A1, B1, H1, K1, PHI_1, A2, B2, H2, K2, PHI_2);
@@ -245,7 +245,18 @@ int main (int argc, char ** argv)
         fclose(gf);
         fclose(hf);
     }//MAXITER
-    printf("\nrun time:  Analytical solution = %8.4lf [ms] |  Polygon approximation = %8.4lf [ms]\n", time_e, time_p);
+    printf("\nrun time: %d cases. Analytical solution = %8.4lf [ms] |  Polygon approximation = %8.4lf [ms]\n", counter, time_e, time_p);
+    printf("run python plot.py %s  %s to plot the results\n", inputFile, resultFile);
     fprintf(stderr, "%d  %f %f %f\n", n, time_e, time_p, meanErr/counter);
     return rtn; 
 }
+
+
+
+
+
+
+
+
+
+
