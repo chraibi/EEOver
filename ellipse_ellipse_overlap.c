@@ -44,14 +44,16 @@
 #include <stdio.h>
 #include "config.h"
 #include <stdlib.h>
-#include <gsl/gsl_math.h>
-#include <gsl/gsl_test.h>
-#include <gsl/gsl_ieee_utils.h>
-#include <gsl/gsl_poly.h>
+/* #include <gsl/gsl_math.h> */
+/* #include <gsl/gsl_test.h> */
+/* #include <gsl/gsl_ieee_utils.h> */
+/* #include <gsl/gsl_poly.h> */
 
-#define REAL(z,i) ((z)[2*(i)])
+#include "gsl_poly.h"
 
-#define IMAG(z,i) ((z)[2*(i)+1])
+/* #define REAL(z,i) ((z)[2*(i)]) */
+
+/* #define IMAG(z,i) ((z)[2*(i)+1]) */
 
 #define DEBUG 0
 
@@ -131,8 +133,8 @@ double ellipse_ellipse_overlap (double PHI_1, double A1, double B1,
      double tmp0, tmp1, tmp2, tmp3;
      double cy[5] = {0.0, 0.0, 0.0, 0.0, 0.0},  py[5] = {0.0, 0.0, 0.0, 0.0, 0.0}, r[3][5] ={{ 0.0, 0.0, 0.0, 0.0, 0.0}};
      double x1, x2;
-     //double ychk[4] = {0.0, 0.0, 0.0, 0.0}, 
-     double * ychk = NULL;
+     double ychk[4] = {0.0, 0.0, 0.0, 0.0};
+     /* double * ychk = NULL; */
      double xint[4], yint[4];
      //double * xint = NULL;
      // double * yint = NULL;
@@ -258,40 +260,44 @@ double ellipse_ellipse_overlap (double PHI_1, double A1, double B1,
      for(i=0; i<5; i++)
           printf("cy[%d]=%f\n",i, cy[i]);
 #endif	
-     if (fabs (cy[4]) > EPS)
-     {
+     if (fabs (cy[4]) > EPS){
           //== QUARTIC COEFFICIENT NONZERO, USE QUARTIC FORMULA ===============
           for (i = 0; i <= 3; i++)
                py[4-i] = cy[i]/cy[4];
           py[0] = 1.0;
             
-          if (DEBUG)
-               for(i=0; i<5; i++)
-                    printf("py[%d]=%f\n",i, py[i]);
+#if DEBUG
+          for(i=0; i<5; i++)
+               printf("py[%d]=%f\n",i, py[i]);
+#endif
 //BIQUADROOTS (py, r);
           //#####################################################################################
-          int ret;
-          double z[10];
-          gsl_poly_complex_workspace * w = gsl_poly_complex_workspace_alloc (5);//5 coeff
-          ret = gsl_poly_complex_solve (cy, 5, w, z);
+          /* int ret; */
+          /* double z[10]; */
+          /* gsl_poly_complex_workspace * w = gsl_poly_complex_workspace_alloc (5);//5 coeff */
+          /* ret = gsl_poly_complex_solve (cy, 5, w, z); */
+          gsl_complex  z[4]; //z0, z1, z2, z3;
+          /* zsolve_quartic.c - finds the complex roots of 
+           *  x^4 + a x^3 + b x^2 + c x + d = 0*/
+          nroots = gsl_poly_complex_solve_quartic (py[1], py[2], py[3], py[4], &z[0], &z[1], &z[2], &z[3]);
 #if DEBUG
-          printf("ret=%d\n", ret);
+          printf("nroots=%d\n", nroots);
 #endif
-          for (i = 0; i < 4; i++)
-          {
-               r[1][i+1] = REAL(z, i);  //GSL_REAL(z0);
-               r[2][i+1] =  IMAG(z, i); // GSL_IMAG(z0);
+          for (i = 0; i < 4; i++){
+               r[1][i+1] = GSL_REAL(z[i]); 
+               r[2][i+1] = GSL_IMAG(z[i]);
 #if DEBUG
                printf("r[1][%d]=%f, r[2][%d]=%f\n", i+1,r[1][i+1], i+1,r[2][i+1] );
-               printf("------->eval=%f\n", gsl_poly_eval (cy, 5, r[1][i+1])  );
+               printf("------->eval_complex=%f +i%f\n", GSL_REAL(gsl_poly_complex_eval (cy, 5, z[i])), GSL_IMAG(gsl_poly_complex_eval (cy, 5, z[i]))  );
+               getc(stdin);
 #endif
           }
-          gsl_poly_complex_workspace_free(w); //free all the memory associated with the workspace w
+          /* getc(stdin); */
+          /* gsl_poly_complex_workspace_free(w); //free all the memory associated with the workspace w */
           //#####################################################################################
-          nroots = 4;
+          /* nroots = 4; */
 }
-     else if (fabs (cy[3]) > EPS)
-     { 
+     else if (fabs (cy[3]) > EPS){ 
           //== QUARTIC DEGENERATES TO CUBIC, USE CUBIC FORMULA ================
           for (i = 0; i <= 2; i++)
                py[3-i] = cy[i]/cy[3];
@@ -300,19 +306,18 @@ double ellipse_ellipse_overlap (double PHI_1, double A1, double B1,
           //CUBICROOTS (py, r);
           //#####################################################################################
           gsl_complex Z0, Z1, Z2;
-          gsl_poly_complex_solve_cubic(py[1], py[2], py[3], &Z0, &Z1, &Z2);
+          nroots =  gsl_poly_complex_solve_cubic(py[1], py[2], py[3], &Z0, &Z1, &Z2);
           r[1][1] = GSL_REAL(Z0);
           r[2][1] = GSL_IMAG(Z0);
           r[1][2] = GSL_REAL(Z1);
           r[2][2] = GSL_IMAG(Z1);
           r[1][3] = GSL_REAL(Z2);
           r[2][3] = GSL_IMAG(Z2);
-          nroots = 3;		
+         
           //#####################################################################################
      }
      else if (fabs (cy[2]) > EPS)
      {
-          double x0, x1;
 		
           //== QUARTIC DEGENERATES TO QUADRATIC, USE QUADRATIC FORMULA ========
           for (i = 0; i <= 1; i++)
@@ -324,18 +329,19 @@ double ellipse_ellipse_overlap (double PHI_1, double A1, double B1,
           //#####################################################################################
           //nroots = gsl_poly_solve_quadratic(py[0], py[1], py[2], &x0, &x1); 
 #if DEBUG
+          double x0, x1;
           int tmp = gsl_poly_solve_quadratic(py[0], py[1], py[2], &x0, &x1); 
           printf ("tmp =%d, x0=%f, x1=%f\n",tmp, x0, x1);
           //tmp = gsl_poly_solve_quadratic(cy[0], cy[1], cy[2], &x0, &x1); 
           //printf ("tmp2 =%d, x0=%f, x1=%f\n",tmp, x0, x1);        
 #endif
           gsl_complex z0, z1;
-          gsl_poly_complex_solve_quadratic (py[0], py[1], py[2], &z0, &z1);
+          nroots = gsl_poly_complex_solve_quadratic (py[0], py[1], py[2], &z0, &z1);
           r[1][1] = GSL_REAL(z0);
           r[2][1] = GSL_IMAG(z0);
           r[1][2] = GSL_REAL(z1);
           r[2][2] = GSL_IMAG(z1);
-          nroots = 2;
+
           //#####################################################################################
 		
      } 
@@ -374,16 +380,16 @@ double ellipse_ellipse_overlap (double PHI_1, double A1, double B1,
 #if DEBUG
                printf ("nychk = %d\n",nychk);
 #endif
-               ychk = (double *)realloc(ychk, nychk*sizeof(double));
+               /* ychk = (double *)realloc(ychk, nychk*sizeof(double)); */
 			
 			
 			
-               if(ychk == NULL){
-               printf("error: could not realloc memory for ychk\n");
+               /* if(ychk == NULL){ */
+               /* printf("error: could not realloc memory for ychk\n"); */
                //free(ychk); //this free is save but unnecessary. 
 //7.20.3.2 The free function Synopsis: The free function causes the space pointed to by ptr to be deallocated, that is, made available for further allocation. If ptr is a null pointer, no action occurs.               
-               exit(-1);
-          } 
+               /* exit(-1); */
+               /* }  */
           
                ychk[ nychk - 1 ] = r[1][i]*B1;
 #if DEBUG
@@ -466,7 +472,7 @@ double ellipse_ellipse_overlap (double PHI_1, double A1, double B1,
                if (nintpts > 4)
                {
                     (*rtnCode) = ERROR_INTERSECTION_PTS;
-                    free(ychk);
+                    /* free(ychk); */
                     return -1.0;
                }
                /* xint = (double *)realloc(xint, nintpts*sizeof(double)); */
@@ -497,7 +503,7 @@ double ellipse_ellipse_overlap (double PHI_1, double A1, double B1,
                if (nintpts > 4)
                {
                     (*rtnCode) = ERROR_INTERSECTION_PTS;
-                    free(ychk);
+                    /* free(ychk); */
                     /* free(xint); */
                     /* free(yint); */
                     return -1.0;
@@ -519,13 +525,6 @@ double ellipse_ellipse_overlap (double PHI_1, double A1, double B1,
 #endif
                     }
           }
-
-#if DEBUG
-               printf("\nxint AFTER sorting\n");
-               print_double_array(xint, nintpts);
-               printf("yint AFTER sorting\n");
-               print_double_array(yint, nintpts);
-#endif
                //write intersection points
                for (i=0; i<nintpts;i++)
                {
@@ -544,7 +543,7 @@ double ellipse_ellipse_overlap (double PHI_1, double A1, double B1,
                OverlapArea = nointpts (A1, B1, A2, B2, H1, K1, H2, K2, PHI_1, 
                     PHI_2, H2_TR, K2_TR, AA,BB, CC, DD, EE, 
                     FF, rtnCode);
-               free (ychk);
+               /* free (ychk); */
                /* free(xint); */
                /* free(yint); */
                return OverlapArea;
@@ -579,7 +578,7 @@ double ellipse_ellipse_overlap (double PHI_1, double A1, double B1,
                     printf("check twointpts\n");
 #endif
                }
-               free (ychk);
+               /* free (ychk); */
                /* free(xint); */
                /* free(yint); */
                return OverlapArea;
@@ -590,7 +589,7 @@ double ellipse_ellipse_overlap (double PHI_1, double A1, double B1,
                     OverlapArea = threeintpts (xint, yint,  A1, B1, PHI_1, A2, B2,
                          H2_TR, K2_TR, PHI_2, AA, BB, CC, DD, 
                          EE, FF, rtnCode);
-                    free (ychk);
+                    /* free (ychk); */
                     /* free(xint); */
                     /* free(yint); */
                     return OverlapArea;
@@ -600,7 +599,7 @@ double ellipse_ellipse_overlap (double PHI_1, double A1, double B1,
                     OverlapArea = fourintpts (xint, yint,  A1, B1, PHI_1, A2, B2,
                          H2_TR, K2_TR, PHI_2, AA, BB, CC, DD, 
                          EE, FF, rtnCode);
-                    free (ychk);
+                    /* free (ychk); */
                     /* free(xint); */
                     /* free(yint); */
                     return OverlapArea;
@@ -610,7 +609,7 @@ double ellipse_ellipse_overlap (double PHI_1, double A1, double B1,
                     //-- return value if this line is omitted)
                     (*rtnCode) = ERROR_INTERSECTION_PTS;
 			
-                    free (ychk);
+                    /* free (ychk); */
                     /* free(xint); */
                     /* free(yint); */
                     return -1.0;
