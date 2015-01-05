@@ -10,6 +10,7 @@ the algorithm published in this [paper](http://link.springer.com/article/10.1007
 
 This should produce an executable (overlap)
 - run the executable with an input-file:
+
 > ./overlap inputfile id
 
 (`id` is 1 or 2 to choose between two different quartic solversc)
