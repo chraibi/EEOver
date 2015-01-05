@@ -13,7 +13,7 @@ This should produce an executable (overlap)
 
 > ./overlap inputfile id
 
-(`id` is 1 or 2 to choose between two different quartic solversc)
+(`id` is 1 or 2 to choose between two different quartic solvers)
 - This should produce two output-files:
 	- **result-File**: The naming is in this form `results_Day_Month_Year_Hour_Min_Second.txt`
 	- **root-File**: The naming is in this form `roots_Day_Month_Year_Hour_Min_Second.txt`
