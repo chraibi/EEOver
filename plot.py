@@ -6,10 +6,9 @@ from math import pi
 import os, shutil
 from sys import argv
 
-
-if len(argv)< 3:
-    print ("Usage: python %s ellipseDataFile rootsFile"%argv[0])
-    exit()
+if len(argv)< 4:
+    print ("Usage: python %s ellipseDataFile rootsFile resultsFile"%argv[0])
+    sys.exit()
 
 
 DIR = "cases" # put the figs here
@@ -24,14 +23,19 @@ else:
     print ("Directory <%s> does not exist. Create one .."%DIR)
 
 filename = argv[1]  # testcases.txt
-rootsfile = argv[2]  #roots.txt
+rootsfile = argv[2]  # roots
+resultsfile = argv[3]  # areas
 
 print ("got input",filename)
 print ("got roots",rootsfile)
+print ("got roots",resultsfile)
 
 f = open (rootsfile)
 data = loadtxt(filename)
-data = np.atleast_2d(data)
+data = np.atleast_2d(data) # for the case that we have only one case
+
+areas = loadtxt(resultsfile)
+areas = np.atleast_2d(areas)
 roots = [line.split() for line in f if not line.startswith("#")]
 
 ids = range(data.shape[0]) #unique(data[:,0]).astype(int)
@@ -39,6 +43,8 @@ ids = range(data.shape[0]) #unique(data[:,0]).astype(int)
 for Id in ids:
     #PHI should be in radian
     d = data[Id, :]
+    area = areas[Id,:] 
+    index = d[0]
     A1 = d[1]
     B1 = d[2]
     H1 = d[3]
@@ -80,7 +86,7 @@ for Id in ids:
 
     pylab.gca().add_patch(cir)
     pylab.axis('scaled')
-    pylab.title("case %d"%(Id))
+    pylab.title(r"$%d,\; A_1= %.3f,\; A_2= %.3f,\;A_{12}= %.3f,\; \epsilon=%.3f$"%(index, area[1], area[2], area[3], area[5]))
 
     pylab.grid()
 

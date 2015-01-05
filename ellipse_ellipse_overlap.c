@@ -51,11 +51,11 @@
 
 #include "gsl_poly.h"
 
-/* #define REAL(z,i) ((z)[2*(i)]) */
+#define REAL(z,i) ((z)[2*(i)])
 
-/* #define IMAG(z,i) ((z)[2*(i)+1]) */
+#define IMAG(z,i) ((z)[2*(i)+1])
 
-#define DEBUG 0
+#define DEBUG 1
 
 
 //===========================================================================
@@ -122,7 +122,7 @@ double ellipse_ellipse_overlap (double PHI_1, double A1, double B1,
                                 double H1, double K1, double PHI_2, 
                                 double A2, double B2, double H2, double K2,
                                 double X[4], double Y[4], int * NROOTS,
-                                int *rtnCode)
+                                int *rtnCode, int choice)
 {
      //=======================================================================
      //== DEFINE LOCAL VARIABLES =============================================
@@ -271,29 +271,53 @@ double ellipse_ellipse_overlap (double PHI_1, double A1, double B1,
                printf("py[%d]=%f\n",i, py[i]);
 #endif
 //BIQUADROOTS (py, r);
-          //#####################################################################################
-          /* int ret; */
-          /* double z[10]; */
-          /* gsl_poly_complex_workspace * w = gsl_poly_complex_workspace_alloc (5);//5 coeff */
-          /* ret = gsl_poly_complex_solve (cy, 5, w, z); */
-          gsl_complex  z[4]; //z0, z1, z2, z3;
-          /* zsolve_quartic.c - finds the complex roots of 
-           *  x^4 + a x^3 + b x^2 + c x + d = 0*/
-          nroots = gsl_poly_complex_solve_quartic (py[1], py[2], py[3], py[4], &z[0], &z[1], &z[2], &z[3]);
+//          int choice=1;
+          double z[10]; //ret = s GSL_SUCCESS if all the roots are found and GSL_EFAILED if the QR reduction does not converge.
+          gsl_complex  zz[4];
+          gsl_poly_complex_workspace * w = gsl_poly_complex_workspace_alloc (5);//5 coeff
+          if (choice==1){
+               gsl_poly_complex_solve (cy, 5, w, z);
+              nroots=4;
+          }
+          else if(choice==2){
+               /* zsolve_quartic.c - finds the complex roots of 
+           *  x^4 + a x^3 + b x^2 + c x + d = 0*/             
+               nroots = gsl_poly_complex_solve_quartic (py[1], py[2], py[3], py[4], &zz[0], &zz[1], &zz[2], &zz[3]);
+          }
+
+       
 #if DEBUG
           printf("nroots=%d\n", nroots);
 #endif
           for (i = 0; i < 4; i++){
-               r[1][i+1] = GSL_REAL(z[i]); 
-               r[2][i+1] = GSL_IMAG(z[i]);
+               if(choice==1){
+                    r[1][i+1] = REAL(z,i); 
+                    r[2][i+1] = IMAG(z,i);
+               }
+               else if(choice==2) {
+                    r[1][i+1] = GSL_REAL(zz[i]); 
+                    r[2][i+1] = GSL_IMAG(zz[i]);
+               }
 #if DEBUG
-               printf("r[1][%d]=%f, r[2][%d]=%f\n", i+1,r[1][i+1], i+1,r[2][i+1] );
-               printf("------->eval_complex=%f +i%f\n", GSL_REAL(gsl_poly_complex_eval (cy, 5, z[i])), GSL_IMAG(gsl_poly_complex_eval (cy, 5, z[i]))  );
-               getc(stdin);
+               if(choice==1){
+                    gsl_complex c;
+                    GSL_SET_REAL (&c, REAL(z,i));
+                    GSL_SET_IMAG (&c, IMAG(z,i));
+
+                    printf("r[1][%d]=%f, r[2][%d]=%f\n", i+1,r[1][i+1], i+1,r[2][i+1] );
+                    printf("------->eval_complex=[%f, %f]\n", GSL_REAL(gsl_poly_complex_eval (cy, 5, c)), GSL_IMAG(gsl_poly_complex_eval (cy, 5, c))  );
+                    getc(stdin);
+               }
+               else{
+                    printf("r[1][%d]=%f, r[2][%d]=%f\n", i+1,r[1][i+1], i+1,r[2][i+1] );
+                    printf("------->eval_complex=[%f, %f]\n", GSL_REAL(gsl_poly_complex_eval (cy, 5, zz[i])), GSL_IMAG(gsl_poly_complex_eval (cy, 5, zz[i]))  );
+                    getc(stdin);
+               }
 #endif
           }
           /* getc(stdin); */
-          /* gsl_poly_complex_workspace_free(w); //free all the memory associated with the workspace w */
+          if (choice==1)
+               gsl_poly_complex_workspace_free(w); //free all the memory associated with the workspace w
           //#####################################################################################
           /* nroots = 4; */
 }
@@ -313,7 +337,8 @@ double ellipse_ellipse_overlap (double PHI_1, double A1, double B1,
           r[2][2] = GSL_IMAG(Z1);
           r[1][3] = GSL_REAL(Z2);
           r[2][3] = GSL_IMAG(Z2);
-         
+          /* printf("3\n"); */
+          
           //#####################################################################################
      }
      else if (fabs (cy[2]) > EPS)
@@ -343,7 +368,8 @@ double ellipse_ellipse_overlap (double PHI_1, double A1, double B1,
           r[2][2] = GSL_IMAG(z1);
 
           //#####################################################################################
-		
+	  /* printf("2\n"); */
+          
      } 
      else  if (fabs (cy[1]) > EPS)
      {
@@ -351,7 +377,10 @@ double ellipse_ellipse_overlap (double PHI_1, double A1, double B1,
           //-- cy[1]*Y + cy[0] = 0
           r[1][1] = (-cy[0]/cy[1]);
           r[2][1] = 0.0;
+          /* printf("1\n"); */
+          
           nroots = 1;
+
      }
      else
      {
@@ -616,557 +645,557 @@ double ellipse_ellipse_overlap (double PHI_1, double A1, double B1,
                } //switch
                }
 
-                    double ellipse2tr (double x, double y, double AA, double BB, 
-                         double CC, double DD, double EE, double FF)
-                    {
-                    return (AA*x*x + BB*x*y + CC*y*y + DD*x + EE*y + FF);
-               }
+double ellipse2tr (double x, double y, double AA, double BB, 
+                   double CC, double DD, double EE, double FF)
+{
+     return (AA*x*x + BB*x*y + CC*y*y + DD*x + EE*y + FF);
+}
 
-                    double nointpts (double A1, double B1, double A2, double B2, double H1, 
-                         double K1, double H2, double K2, double PHI_1, double PHI_2,
-                         double H2_TR, double K2_TR, double AA, double BB, 
-                         double CC, double DD, double EE, double FF, int *rtnCode)
-                    {
-                    //some tmp-variables to avoid doing things several times.
-                    double A1B1 = A1*B1;
-                    double A2B2 = A2*B2;
-                    double Area_1 = pi*A1B1;
-                    double Area_2 = pi*A2B2;
-                    //-- The relative size of the two ellipses can be found from the axis
-                    //-- lengths 
-                    double relsize = A1B1 - A2B2; 
-                    if (relsize > 0.0)
-                    {
-                    //-- First Ellipse is larger than second ellipse.
-                    //-- If second ellipse center (H2_TR, K2_TR) is inside
-                    //-- first ellipse, then ellipse 2 is completely inside 
-                    //-- ellipse 1. Otherwise, the ellipses are disjoint.
-                    if ( ((H2_TR*H2_TR) / (A1*A1) 
-                         + (K2_TR*K2_TR) / (B1*B1)) < 1.0 )
-                    {
-                    (*rtnCode) = ELLIPSE2_INSIDE_ELLIPSE1;
-                    return Area_2;
-               }
-                    else
-                    {
-                    (*rtnCode) = DISJOINT_ELLIPSES;
-                    return 0.0;
-               }
-               }
-                    else if (relsize < 0.0)
-                    {
-                    //-- Second Ellipse is larger than first ellipse
-                    //-- If first ellipse center (0, 0) is inside the
-                    //-- second ellipse, then ellipse 1 is completely inside
-                    //-- ellipse 2. Otherwise, the ellipses are disjoint
-                    //--   AA*x^2 + BB*x*y + CC*y^2 + DD*x + EE*y + FF = 0
-                    if (FF < 0.0)
-                    {
-                    (*rtnCode) = ELLIPSE1_INSIDE_ELLIPSE2;
-                    return Area_1;
-               }
-                    else
-                    {
-                    (*rtnCode) = DISJOINT_ELLIPSES;
-                    return 0.0;
-               }
-               }
-                    else
-                    {
-                    //-- If execution arrives here, the relative sizes are identical.
-                    //-- Are the ellipses the same?  Check the parameters to see.
-                    //MC. Ellipses are the same if: H1=H2 And K1==K2 And Area_1 == Area_2
-                    //if ((((fabs (H1 - H2)) < EPS) && (fabs (K1 - K2) < EPS))
-                    //	  && (fabs (PHI_1 - PHI_2) < EPS))
-                    if( (fabs (H1 - H2) < EPS) && (fabs (K1 - K2) < EPS) && (fabs (Area_1 - Area_2) < EPS))
-                    {
-                    (*rtnCode) = ELLIPSES_ARE_IDENTICAL;
-                    return Area_1; 
-               }
-                    else
-                    {
-                    //-- ellipses must be disjoint
-                    (*rtnCode) = DISJOINT_ELLIPSES;
-                    return 0.0;
-               }
-               }//-- end if (relsize > 0.0)
-               }
+double nointpts (double A1, double B1, double A2, double B2, double H1, 
+                 double K1, double H2, double K2, double PHI_1, double PHI_2,
+                 double H2_TR, double K2_TR, double AA, double BB, 
+                 double CC, double DD, double EE, double FF, int *rtnCode)
+{
+     //some tmp-variables to avoid doing things several times.
+     double A1B1 = A1*B1;
+     double A2B2 = A2*B2;
+     double Area_1 = pi*A1B1;
+     double Area_2 = pi*A2B2;
+     //-- The relative size of the two ellipses can be found from the axis
+     //-- lengths 
+     double relsize = A1B1 - A2B2; 
+     if (relsize > 0.0)
+     {
+          //-- First Ellipse is larger than second ellipse.
+          //-- If second ellipse center (H2_TR, K2_TR) is inside
+          //-- first ellipse, then ellipse 2 is completely inside 
+          //-- ellipse 1. Otherwise, the ellipses are disjoint.
+          if ( ((H2_TR*H2_TR) / (A1*A1) 
+                + (K2_TR*K2_TR) / (B1*B1)) < 1.0 )
+          {
+               (*rtnCode) = ELLIPSE2_INSIDE_ELLIPSE1;
+               return Area_2;
+          }
+          else
+          {
+               (*rtnCode) = DISJOINT_ELLIPSES;
+               return 0.0;
+          }
+     }
+     else if (relsize < 0.0)
+     {
+          //-- Second Ellipse is larger than first ellipse
+          //-- If first ellipse center (0, 0) is inside the
+          //-- second ellipse, then ellipse 1 is completely inside
+          //-- ellipse 2. Otherwise, the ellipses are disjoint
+          //--   AA*x^2 + BB*x*y + CC*y^2 + DD*x + EE*y + FF = 0
+          if (FF < 0.0)
+          {
+               (*rtnCode) = ELLIPSE1_INSIDE_ELLIPSE2;
+               return Area_1;
+          }
+          else
+          {
+               (*rtnCode) = DISJOINT_ELLIPSES;
+               return 0.0;
+          }
+     }
+     else
+     {
+          //-- If execution arrives here, the relative sizes are identical.
+          //-- Are the ellipses the same?  Check the parameters to see.
+          //MC. Ellipses are the same if: H1=H2 And K1==K2 And Area_1 == Area_2
+          //if ((((fabs (H1 - H2)) < EPS) && (fabs (K1 - K2) < EPS))
+          //	  && (fabs (PHI_1 - PHI_2) < EPS))
+          if( (fabs (H1 - H2) < EPS) && (fabs (K1 - K2) < EPS) && (fabs (Area_1 - Area_2) < EPS))
+          {
+               (*rtnCode) = ELLIPSES_ARE_IDENTICAL;
+               return Area_1; 
+          }
+          else
+          {
+               //-- ellipses must be disjoint
+               (*rtnCode) = DISJOINT_ELLIPSES;
+               return 0.0;
+          }
+     }//-- end if (relsize > 0.0)
+}
 
 //-- two distinct intersection points (x1, y1) and (x2, y2) find overlap area
-                    double twointpts (double x[], double y[], double A1, double B1, double PHI_1, 
-                         double A2, double B2, double H2_TR, double K2_TR, 
-                         double PHI_2, double AA, double BB, double CC, double DD, 
-                         double EE, double FF, int *rtnCode)
-                    {
-                    double area1, area2;
-                    double xmid, ymid, xmid_rt, ymid_rt;
-                    double theta1, theta2;
-                    double tmp, trsign;
-                    double x1_tr, y1_tr, x2_tr, y2_tr;
-                    //double discr;
-                    double cosphi, sinphi;
+double twointpts (double x[], double y[], double A1, double B1, double PHI_1, 
+                  double A2, double B2, double H2_TR, double K2_TR, 
+                  double PHI_2, double AA, double BB, double CC, double DD, 
+                  double EE, double FF, int *rtnCode)
+{
+     double area1, area2;
+     double xmid, ymid, xmid_rt, ymid_rt;
+     double theta1, theta2;
+     double tmp, trsign;
+     double x1_tr, y1_tr, x2_tr, y2_tr;
+     //double discr;
+     double cosphi, sinphi;
 
-                    //-- if execution arrives here, the intersection points are not
-                    //-- tangents.
+     //-- if execution arrives here, the intersection points are not
+     //-- tangents.
 	
-                    //-- determine which direction to integrate in the ellipse_segment
-                    //-- routine for each ellipse.
+     //-- determine which direction to integrate in the ellipse_segment
+     //-- routine for each ellipse.
 
-                    //-- find the parametric angles for each point on ellipse 1
-                    if (fabs (x[0]) > A1)
-                         x[0] = (x[0] < 0) ? -A1 : A1;
-                    if (y[0] < 0.0) 	 //-- Quadrant III or IV
-                         theta1 = twopi - acos (x[0] / A1);
-                    else             //-- Quadrant I or II      
-                         theta1 = acos (x[0] / A1);
+     //-- find the parametric angles for each point on ellipse 1
+     if (fabs (x[0]) > A1)
+          x[0] = (x[0] < 0) ? -A1 : A1;
+     if (y[0] < 0.0) 	 //-- Quadrant III or IV
+          theta1 = twopi - acos (x[0] / A1);
+     else             //-- Quadrant I or II      
+          theta1 = acos (x[0] / A1);
 		
-                    if (fabs (x[1]) > A1)
-                         x[1] = (x[1] < 0) ? -A1 : A1;
-                    if (y[1] < 0.0) 	 //-- Quadrant III or IV
-                         theta2 = twopi - acos (x[1] / A1);
-                    else             //-- Quadrant I or II      
-                         theta2 = acos (x[1] / A1);
+     if (fabs (x[1]) > A1)
+          x[1] = (x[1] < 0) ? -A1 : A1;
+     if (y[1] < 0.0) 	 //-- Quadrant III or IV
+          theta2 = twopi - acos (x[1] / A1);
+     else             //-- Quadrant I or II      
+          theta2 = acos (x[1] / A1);
 
-                    //-- logic is for proceeding counterclockwise from theta1 to theta2
-                    if (theta1 > theta2)
-                    {
-                    tmp = theta1;
-                    theta1 = theta2;
-                    theta2 = tmp;
-               }
+     //-- logic is for proceeding counterclockwise from theta1 to theta2
+     if (theta1 > theta2)
+     {
+          tmp = theta1;
+          theta1 = theta2;
+          theta2 = tmp;
+     }
 
-                    //-- find a point on the first ellipse that is different than the two
-                    //-- intersection points.
-                    xmid = A1*cos ((theta1 + theta2)/2.0);	
-                    ymid = B1*sin ((theta1 + theta2)/2.0);	
+     //-- find a point on the first ellipse that is different than the two
+     //-- intersection points.
+     xmid = A1*cos ((theta1 + theta2)/2.0);	
+     ymid = B1*sin ((theta1 + theta2)/2.0);	
 	
-                    //-- the point (xmid, ymid) is on the first ellipse 'between' the two
-                    //-- intersection points (x[1], y[1]) and (x[2], y[2]) when travelling 
-                    //-- counter- clockwise from (x[1], y[1]) to (x[2], y[2]).  If the point
-                    //-- (xmid, ymid) is inside the second ellipse, then the desired segment
-                    //-- of ellipse 1 contains the point (xmid, ymid), so integrate 
-                    //-- counterclockwise from (x[1], y[1]) to (x[2], y[2]).  Otherwise, 
-                    //-- integrate counterclockwise from (x[2], y[2]) to (x[1], y[1])
-                    if (ellipse2tr (xmid, ymid, AA, BB, CC, DD, EE, FF) > 0.0)
-                    {
-                    tmp = theta1;
-                    theta1 = theta2;
-                    theta2 = tmp;
-               }
+     //-- the point (xmid, ymid) is on the first ellipse 'between' the two
+     //-- intersection points (x[1], y[1]) and (x[2], y[2]) when travelling 
+     //-- counter- clockwise from (x[1], y[1]) to (x[2], y[2]).  If the point
+     //-- (xmid, ymid) is inside the second ellipse, then the desired segment
+     //-- of ellipse 1 contains the point (xmid, ymid), so integrate 
+     //-- counterclockwise from (x[1], y[1]) to (x[2], y[2]).  Otherwise, 
+     //-- integrate counterclockwise from (x[2], y[2]) to (x[1], y[1])
+     if (ellipse2tr (xmid, ymid, AA, BB, CC, DD, EE, FF) > 0.0)
+     {
+          tmp = theta1;
+          theta1 = theta2;
+          theta2 = tmp;
+     }
 
-                    //-- here is the ellipse segment routine for the first ellipse
-                    if (theta1 > theta2)
-                         theta1 -= twopi;
-                    if ((theta2 - theta1) > pi)
-                         trsign = 1.0;
-                    else
-                         trsign = -1.0;
-                    /* area1 = 0.5*(A1*B1*(theta2 - theta1)  */
-                    /* 			 + trsign*fabs (x[1]*y[2] - x[2]*y[1]));	 */
+     //-- here is the ellipse segment routine for the first ellipse
+     if (theta1 > theta2)
+          theta1 -= twopi;
+     if ((theta2 - theta1) > pi)
+          trsign = 1.0;
+     else
+          trsign = -1.0;
+     /* area1 = 0.5*(A1*B1*(theta2 - theta1)  */
+     /* 			 + trsign*fabs (x[1]*y[2] - x[2]*y[1]));	 */
 
-                    area1 = 0.5*(A1*B1*(theta2 - theta1) 
-                         + trsign*fabs (x[0]*y[1] - x[1]*y[0]));	
+     area1 = 0.5*(A1*B1*(theta2 - theta1) 
+                  + trsign*fabs (x[0]*y[1] - x[1]*y[0]));	
 	
-                    if (area1 < 0)
-                    {
-                    printf("TWO area1=%f\n",area1);
-                    area1 += A1*B1;
-                    getc(stdin);
-               }
-                    //-- find ellipse 2 segment area.  The ellipse segment routine
-                    //-- needs an ellipse that is centered at the origin and oriented
-                    //-- with the coordinate axes.  The intersection points (x[1], y[1]) and
-                    //-- (x[2], y[2]) are found with both ellipses translated and rotated by
-                    //-- (-H1, -K1) and -PHI_1.  Further translate and rotate the points
-                    //-- to put the second ellipse at the origin and oriented with the
-                    //-- coordinate axes.  The translation is (-H2_TR, -K2_TR), and the
-                    //-- rotation is -(PHI_2 - PHI_1) = PHI_1 - PHI_2
-                    cosphi = cos (PHI_1 - PHI_2);
-                    sinphi = sin (PHI_1 - PHI_2);
-                    x1_tr = (x[0] - H2_TR)*cosphi + (y[0] - K2_TR)*-sinphi;
-                    y1_tr = (x[0] - H2_TR)*sinphi + (y[0] - K2_TR)*cosphi;
-                    x2_tr = (x[1] - H2_TR)*cosphi + (y[1] - K2_TR)*-sinphi;
-                    y2_tr = (x[1] - H2_TR)*sinphi + (y[1] - K2_TR)*cosphi;
+     if (area1 < 0)
+     {
+          printf("TWO area1=%f\n",area1);
+          area1 += A1*B1;
+          getc(stdin);
+     }
+     //-- find ellipse 2 segment area.  The ellipse segment routine
+     //-- needs an ellipse that is centered at the origin and oriented
+     //-- with the coordinate axes.  The intersection points (x[1], y[1]) and
+     //-- (x[2], y[2]) are found with both ellipses translated and rotated by
+     //-- (-H1, -K1) and -PHI_1.  Further translate and rotate the points
+     //-- to put the second ellipse at the origin and oriented with the
+     //-- coordinate axes.  The translation is (-H2_TR, -K2_TR), and the
+     //-- rotation is -(PHI_2 - PHI_1) = PHI_1 - PHI_2
+     cosphi = cos (PHI_1 - PHI_2);
+     sinphi = sin (PHI_1 - PHI_2);
+     x1_tr = (x[0] - H2_TR)*cosphi + (y[0] - K2_TR)*-sinphi;
+     y1_tr = (x[0] - H2_TR)*sinphi + (y[0] - K2_TR)*cosphi;
+     x2_tr = (x[1] - H2_TR)*cosphi + (y[1] - K2_TR)*-sinphi;
+     y2_tr = (x[1] - H2_TR)*sinphi + (y[1] - K2_TR)*cosphi;
 	
-                    //-- determine which branch of the ellipse to integrate by finding a
-                    //-- point on the second ellipse, and asking whether it is inside the
-                    //-- first ellipse (in their once-translated+rotated positions)
-                    //-- find the parametric angles for each point on ellipse 1
-                    if (fabs (x1_tr) > A2)
-                         x1_tr = (x1_tr < 0) ? -A2 : A2;
-                    if (y1_tr < 0.0) 	 //-- Quadrant III or IV
-                         theta1 = twopi - acos (x1_tr/A2);
-                    else             //-- Quadrant I or II      
-                         theta1 = acos (x1_tr/A2);
+     //-- determine which branch of the ellipse to integrate by finding a
+     //-- point on the second ellipse, and asking whether it is inside the
+     //-- first ellipse (in their once-translated+rotated positions)
+     //-- find the parametric angles for each point on ellipse 1
+     if (fabs (x1_tr) > A2)
+          x1_tr = (x1_tr < 0) ? -A2 : A2;
+     if (y1_tr < 0.0) 	 //-- Quadrant III or IV
+          theta1 = twopi - acos (x1_tr/A2);
+     else             //-- Quadrant I or II      
+          theta1 = acos (x1_tr/A2);
 		
-                    if (fabs (x2_tr) > A2)
-                         x2_tr = (x2_tr < 0) ? -A2 : A2;
-                    if (y2_tr < 0.0) 	 //-- Quadrant III or IV
-                         theta2 = twopi - acos (x2_tr/A2);
-                    else             //-- Quadrant I or II      
-                         theta2 = acos (x2_tr/A2);
+     if (fabs (x2_tr) > A2)
+          x2_tr = (x2_tr < 0) ? -A2 : A2;
+     if (y2_tr < 0.0) 	 //-- Quadrant III or IV
+          theta2 = twopi - acos (x2_tr/A2);
+     else             //-- Quadrant I or II      
+          theta2 = acos (x2_tr/A2);
 
-                    //-- logic is for proceeding counterclockwise from theta1 to theta2
-                    if (theta1 > theta2)
-                    {
-                    tmp = theta1;
-                    theta1 = theta2;
-                    theta2 = tmp;
-               }
+     //-- logic is for proceeding counterclockwise from theta1 to theta2
+     if (theta1 > theta2)
+     {
+          tmp = theta1;
+          theta1 = theta2;
+          theta2 = tmp;
+     }
 
-                    //-- find a point on the second ellipse that is different than the two
-                    //-- intersection points.
-                    xmid = A2*cos ((theta1 + theta2)/2.0);	
-                    ymid = B2*sin ((theta1 + theta2)/2.0);
+     //-- find a point on the second ellipse that is different than the two
+     //-- intersection points.
+     xmid = A2*cos ((theta1 + theta2)/2.0);	
+     ymid = B2*sin ((theta1 + theta2)/2.0);
 	
-                    //-- translate the point back to the second ellipse in its once-
-                    //-- translated+rotated position
-                    cosphi = cos (PHI_2 - PHI_1);
-                    sinphi = sin (PHI_2 - PHI_1);
-                    xmid_rt = xmid*cosphi + ymid*-sinphi + H2_TR;
-                    ymid_rt = xmid*sinphi + ymid*cosphi + K2_TR;
+     //-- translate the point back to the second ellipse in its once-
+     //-- translated+rotated position
+     cosphi = cos (PHI_2 - PHI_1);
+     sinphi = sin (PHI_2 - PHI_1);
+     xmid_rt = xmid*cosphi + ymid*-sinphi + H2_TR;
+     ymid_rt = xmid*sinphi + ymid*cosphi + K2_TR;
 
-                    //-- the point (xmid_rt, ymid_rt) is on the second ellipse 'between' the
-                    //-- intersection points (x[1], y[1]) and (x[2], y[2]) when travelling
-                    //-- counterclockwise from (x[1], y[1]) to (x[2], y[2]).  If the point
-                    //-- (xmid_rt, ymid_rt) is inside the first ellipse, then the desired 
-                    //-- segment of ellipse 2 contains the point (xmid_rt, ymid_rt), so 
-                    //-- integrate counterclockwise from (x[1], y[1]) to (x[2], y[2]).  
-                    //-- Otherwise, integrate counterclockwise from (x[2], y[2]) to 
-                    //-- (x[1], y[1])
-                    if (((xmid_rt*xmid_rt)/(A1*A1) + (ymid_rt*ymid_rt)/(B1*B1)) > 1.0)
-                    {
-                    tmp = theta1;
-                    theta1 = theta2;
-                    theta2 = tmp;
-               }
+     //-- the point (xmid_rt, ymid_rt) is on the second ellipse 'between' the
+     //-- intersection points (x[1], y[1]) and (x[2], y[2]) when travelling
+     //-- counterclockwise from (x[1], y[1]) to (x[2], y[2]).  If the point
+     //-- (xmid_rt, ymid_rt) is inside the first ellipse, then the desired 
+     //-- segment of ellipse 2 contains the point (xmid_rt, ymid_rt), so 
+     //-- integrate counterclockwise from (x[1], y[1]) to (x[2], y[2]).  
+     //-- Otherwise, integrate counterclockwise from (x[2], y[2]) to 
+     //-- (x[1], y[1])
+     if (((xmid_rt*xmid_rt)/(A1*A1) + (ymid_rt*ymid_rt)/(B1*B1)) > 1.0)
+     {
+          tmp = theta1;
+          theta1 = theta2;
+          theta2 = tmp;
+     }
 
-                    //-- here is the ellipse segment routine for the second ellipse
-                    if (theta1 > theta2)
-                         theta1 -= twopi;
-                    if ((theta2 - theta1) > pi)
-                         trsign = 1.0;
-                    else
-                         trsign = -1.0;
-                    area2 = 0.5*(A2*B2*(theta2 - theta1) 
-                         + trsign*fabs (x1_tr*y2_tr - x2_tr*y1_tr));	
+     //-- here is the ellipse segment routine for the second ellipse
+     if (theta1 > theta2)
+          theta1 -= twopi;
+     if ((theta2 - theta1) > pi)
+          trsign = 1.0;
+     else
+          trsign = -1.0;
+     area2 = 0.5*(A2*B2*(theta2 - theta1) 
+                  + trsign*fabs (x1_tr*y2_tr - x2_tr*y1_tr));	
 	
-                    if (area2 < 0)
-                    {
+     if (area2 < 0)
+     {
 #if DEBUG
-                         printf("TWO area2=%f\n",area2);
+          printf("TWO area2=%f\n",area2);
 #endif
-                         area2 += A2*B2;
-		
-                    }
+          area2 += A2*B2;
+          
+     }
 	
-                    (*rtnCode) = TWO_INTERSECTION_POINTS;
+     (*rtnCode) = TWO_INTERSECTION_POINTS;
 #if DEBUG
-                    printf("Twointpts: \t area1 =%f,  area2=%f\n",area1, area2);
+     printf("Twointpts: \t area1 =%f,  area2=%f\n",area1, area2);
 #endif
-                    return area1 + area2;
-                    }
+     return area1 + area2;
+}
 
 //-- three distinct intersection points, must have two intersections
 //-- and one tangent, which is the only possibility
-                    double threeintpts (double xint[], double yint[], double A1, double B1, 
-                                        double PHI_1, double A2, double B2, double H2_TR, 
-                                        double K2_TR, double PHI_2, double AA, double BB, 
-                                        double CC, double DD, double EE, double FF,
-                                        int *rtnCode)
-                    {
-                         int i, tanpts, tanindex, fnRtn;
-                         double OverlapArea;
+double threeintpts (double xint[], double yint[], double A1, double B1, 
+                    double PHI_1, double A2, double B2, double H2_TR, 
+                    double K2_TR, double PHI_2, double AA, double BB, 
+                    double CC, double DD, double EE, double FF,
+                    int *rtnCode)
+{
+     int i, tanpts, tanindex, fnRtn;
+     double OverlapArea;
 
-                         //-- need to determine which point is a tangent, and which two points
-                         //-- are intersections
-                         tanpts = 0;
-                         for (i = 0; i < 3; i++)
-                         {
-                              fnRtn = istanpt (xint[i], yint[i], A1, B1, AA, BB, CC, DD, EE, FF);
+     //-- need to determine which point is a tangent, and which two points
+     //-- are intersections
+     tanpts = 0;
+     for (i = 0; i < 3; i++)
+     {
+          fnRtn = istanpt (xint[i], yint[i], A1, B1, AA, BB, CC, DD, EE, FF);
 
-                              if (fnRtn == TANGENT_POINT)
-                              {
-                                   tanpts++;
-                                   tanindex = i;
-                              }
-                         }
+          if (fnRtn == TANGENT_POINT)
+          {
+               tanpts++;
+               tanindex = i;
+          }
+     }
 #if DEBUG
-                         printf("tanindex=%d\n",tanindex);
+     printf("tanindex=%d\n",tanindex);
 #endif
-                         //-- there MUST be 2 intersection points and only one tangent
-                         if (tanpts != 1)
-                         {
-                              //-- should never get here unless there is a problem discerning
-                              //-- whether or not a point is a tangent or intersection
-                              (*rtnCode) = ERROR_INTERSECTION_PTS;
-                              return -1.0;
-                         }
+     //-- there MUST be 2 intersection points and only one tangent
+     if (tanpts != 1)
+     {
+          //-- should never get here unless there is a problem discerning
+          //-- whether or not a point is a tangent or intersection
+          (*rtnCode) = ERROR_INTERSECTION_PTS;
+          return -1.0;
+     }
 	
-                         //-- store the two interesection points into (x[1], y[1]) and 
-                         //-- (x[2], y[2])
-                         switch (tanindex)
-                         {
-                         case 0:
-                              xint[0] = xint[2];
-                              yint[0] = yint[2];
+     //-- store the two interesection points into (x[1], y[1]) and 
+     //-- (x[2], y[2])
+     switch (tanindex)
+     {
+     case 0:
+          xint[0] = xint[2];
+          yint[0] = yint[2];
 			
-                              break;
+          break;
 
-                         case 1:
-                              xint[1] = xint[2];
-                              yint[1] = yint[2];
+     case 1:
+          xint[1] = xint[2];
+          yint[1] = yint[2];
 			
-                              break;
+          break;
 
-                         case 2:
-                              //-- intersection points are already in the right places
-                              break;
-                         }
+     case 2:
+          //-- intersection points are already in the right places
+          break;
+     }
 
-                         OverlapArea = twointpts (xint, yint, A1, B1, PHI_1, A2, B2, H2_TR, K2_TR,
-                                                  PHI_2, AA, BB, CC, DD, EE, FF, rtnCode);
-                         (*rtnCode) = THREE_INTERSECTION_POINTS;
-                         return OverlapArea;
-                    }
+     OverlapArea = twointpts (xint, yint, A1, B1, PHI_1, A2, B2, H2_TR, K2_TR,
+                              PHI_2, AA, BB, CC, DD, EE, FF, rtnCode);
+     (*rtnCode) = THREE_INTERSECTION_POINTS;
+     return OverlapArea;
+}
 
 //-- four intersection points
-                    double fourintpts (double xint[], double yint[], double A1, double B1, 
-                                       double PHI_1, double A2, double B2, double H2_TR, 
-                                       double K2_TR, double PHI_2, double AA, double BB, 
-                                       double CC, double DD, double EE, double FF, int *rtnCode)
-                    {
-                         int i, j, k;
-                         double xmid, ymid, xint_tr[4], yint_tr[4], OverlapArea;
-                         double theta[4], theta_tr[4], cosphi, sinphi, tmp0, tmp1, tmp2;
-                         double area1=0, area2=0, area3=0, area4=0, area5=0;
+double fourintpts (double xint[], double yint[], double A1, double B1, 
+                   double PHI_1, double A2, double B2, double H2_TR, 
+                   double K2_TR, double PHI_2, double AA, double BB, 
+                   double CC, double DD, double EE, double FF, int *rtnCode)
+{
+     int i, j, k;
+     double xmid, ymid, xint_tr[4], yint_tr[4], OverlapArea;
+     double theta[4], theta_tr[4], cosphi, sinphi, tmp0, tmp1, tmp2;
+     double area1=0, area2=0, area3=0, area4=0, area5=0;
 
 
-                         //some tmp-variables to avoid calculating the same thing several times.
-                         double A1B1 = A1*B1;
-                         double A2B2 = A2*B2;
-                         double Area_1 = pi*A1B1;
-                         double Area_2 = pi*A2B2;
+     //some tmp-variables to avoid calculating the same thing several times.
+     double A1B1 = A1*B1;
+     double A2B2 = A2*B2;
+     double Area_1 = pi*A1B1;
+     double Area_2 = pi*A2B2;
 
 	
-                         //-- only one case, which involves two segments from each ellipse, plus
-                         //-- two triangles.
-                         //-- get the parametric angles along the first ellipse for each of the
-                         //-- intersection points
+     //-- only one case, which involves two segments from each ellipse, plus
+     //-- two triangles.
+     //-- get the parametric angles along the first ellipse for each of the
+     //-- intersection points
 //		for (i = 1; i <= 4; i++)
-                         for (i = 0; i <= 3; i++)
-                         {
-                              if (fabs (xint[i]) > A1)
-                                   xint[i] = (xint[i] < 0) ? -A1 : A1;
-                              if (yint[i] < 0.0) 	 //-- Quadrant III or IV
-                                   theta[i] = twopi - acos (xint[i] / A1);
-                              else             //-- Quadrant I or II      
-                                   theta[i] = acos (xint[i] / A1);
-                         }
+     for (i = 0; i <= 3; i++)
+     {
+          if (fabs (xint[i]) > A1)
+               xint[i] = (xint[i] < 0) ? -A1 : A1;
+          if (yint[i] < 0.0) 	 //-- Quadrant III or IV
+               theta[i] = twopi - acos (xint[i] / A1);
+          else             //-- Quadrant I or II      
+               theta[i] = acos (xint[i] / A1);
+     }
 		
-                         //-- sort the angles by straight insertion, and put the points in 
-                         //-- counter-clockwise order
+     //-- sort the angles by straight insertion, and put the points in 
+     //-- counter-clockwise order
 #if DEBUG
-                         for (int k=0; k<=3; k++)
-                         {
-                              printf("k=%d:  Theta = %f, xint=%f, yint=%f\n",k,theta[k], xint[k], yint[k]);
-                         }
+     for (int k=0; k<=3; k++)
+     {
+          printf("k=%d:  Theta = %f, xint=%f, yint=%f\n",k,theta[k], xint[k], yint[k]);
+     }
 #endif
-                         for (j = 1; j <= 3; j++)
-                         {
-                         tmp0 = theta[j];
-                         tmp1 = xint[j];
-                         tmp2 = yint[j];
+     for (j = 1; j <= 3; j++)
+     {
+          tmp0 = theta[j];
+          tmp1 = xint[j];
+          tmp2 = yint[j];
 		
-                         for (k = j - 1; k >= 0; k--)
-                         {
-                         if (theta[k] <= tmp0)
-                              break;
+          for (k = j - 1; k >= 0; k--)
+          {
+               if (theta[k] <= tmp0)
+                    break;
 			
-                         theta[k+1] = theta[k];
-                         xint[k+1] = xint[k];
-                         yint[k+1] = yint[k];
-                    }
+               theta[k+1] = theta[k];
+               xint[k+1] = xint[k];
+               yint[k+1] = yint[k];
+          }
 		
-                         theta[k+1] = tmp0;
-                         xint[k+1] = tmp1;
-                         yint[k+1] = tmp2;
-                    }
+          theta[k+1] = tmp0;
+          xint[k+1] = tmp1;
+          yint[k+1] = tmp2;
+     }
 #if DEBUG
-                         printf("AFTER sorting\n");
-                         for (int k=0; k<=3; k++)
-                         {
-                         printf("k=%d:  Theta = %f, xint=%f, yint=%f\n",k,theta[k], xint[k], yint[k]);
-                    }    
+     printf("AFTER sorting\n");
+     for (int k=0; k<=3; k++)
+     {
+          printf("k=%d:  Theta = %f, xint=%f, yint=%f\n",k,theta[k], xint[k], yint[k]);
+     }    
 #endif
 	
-                         //-- find the area of the interior quadrilateral
-                         /* area1 = 0.5*fabs ((xint[3] - xint[1])*(yint[4] - yint[2]) */
-                         /* 				  - (xint[4] - xint[2])*(yint[3] - yint[1])); */
-                         area1 = 0.5*fabs ((xint[2] - xint[0])*(yint[3] - yint[1])
-                                           - (xint[3] - xint[1])*(yint[2] - yint[0]));
+     //-- find the area of the interior quadrilateral
+     /* area1 = 0.5*fabs ((xint[3] - xint[1])*(yint[4] - yint[2]) */
+     /* 				  - (xint[4] - xint[2])*(yint[3] - yint[1])); */
+     area1 = 0.5*fabs ((xint[2] - xint[0])*(yint[3] - yint[1])
+                       - (xint[3] - xint[1])*(yint[2] - yint[0]));
 	
-                         //-- the intersection points lie on the second ellipse in its once
-                         //-- translated+rotated position.  The segment algorithm is implemented
-                         //-- for an ellipse that is centered at the origin, and oriented with
-                         //-- the coordinate axes; so, in order to use the segment algorithm
-                         //-- with the second ellipse, the intersection points must be further
-                         //-- translated+rotated by amounts that put the second ellipse centered
-                         //-- at the origin and oriented with the coordinate axes.
-                         cosphi = cos (PHI_1 - PHI_2);
-                         sinphi = sin (PHI_1 - PHI_2);
-                         for (i = 0; i <= 3; i++)
-                         {
-                              xint_tr[i] = (xint[i] - H2_TR)*cosphi + (yint[i] - K2_TR)*-sinphi;
-                              yint_tr[i] = (xint[i] - H2_TR)*sinphi + (yint[i] - K2_TR)*cosphi;
+     //-- the intersection points lie on the second ellipse in its once
+     //-- translated+rotated position.  The segment algorithm is implemented
+     //-- for an ellipse that is centered at the origin, and oriented with
+     //-- the coordinate axes; so, in order to use the segment algorithm
+     //-- with the second ellipse, the intersection points must be further
+     //-- translated+rotated by amounts that put the second ellipse centered
+     //-- at the origin and oriented with the coordinate axes.
+     cosphi = cos (PHI_1 - PHI_2);
+     sinphi = sin (PHI_1 - PHI_2);
+     for (i = 0; i <= 3; i++)
+     {
+          xint_tr[i] = (xint[i] - H2_TR)*cosphi + (yint[i] - K2_TR)*-sinphi;
+          yint_tr[i] = (xint[i] - H2_TR)*sinphi + (yint[i] - K2_TR)*cosphi;
 		
-                              if (fabs (xint_tr[i]) > A2)
-                                   xint_tr[i] = (xint_tr[i] < 0) ? -A2 : A2;
-                              if (yint_tr[i] < 0.0) 	 //-- Quadrant III or IV
-                                   theta_tr[i] = twopi - acos (xint_tr[i]/A2);
-                              else             //-- Quadrant I or II      
-                                   theta_tr[i] = acos (xint_tr[i]/A2);
-                         }
+          if (fabs (xint_tr[i]) > A2)
+               xint_tr[i] = (xint_tr[i] < 0) ? -A2 : A2;
+          if (yint_tr[i] < 0.0) 	 //-- Quadrant III or IV
+               theta_tr[i] = twopi - acos (xint_tr[i]/A2);
+          else             //-- Quadrant I or II      
+               theta_tr[i] = acos (xint_tr[i]/A2);
+     }
 
-                         //-- get the area of the two segments on ellipse 1
-                         xmid = A1*cos ((theta[0] + theta[1])/2.0);	
-                         ymid = B1*sin ((theta[0] + theta[1])/2.0);
-                         //-- the point (xmid, ymid) is on the first ellipse 'between' the two
-                         //-- sorted intersection points (xint[1], yint[1]) and (xint[2], yint[2])
-                         //-- when travelling counter- clockwise from (xint[1], yint[1]) to 
-                         //-- (xint[2], yint[2]).  If the point (xmid, ymid) is inside the second 
-                         //-- ellipse, then one desired segment of ellipse 1 contains the point 
-                         //-- (xmid, ymid), so integrate counterclockwise from (xint[1], yint[1])
-                         //-- to (xint[2], yint[2]) for the first segment, and from 
-                         //-- (xint[3], yint[3] to (xint[4], yint[4]) for the second segment.
-                         if (ellipse2tr (xmid, ymid, AA, BB, CC, DD, EE, FF) < 0.0)
-                         {
-                              area2 = 0.5*(A1B1*(theta[1] - theta[0])
-                                           - fabs (xint[0]*yint[1] - xint[1]*yint[0]));
+     //-- get the area of the two segments on ellipse 1
+     xmid = A1*cos ((theta[0] + theta[1])/2.0);	
+     ymid = B1*sin ((theta[0] + theta[1])/2.0);
+     //-- the point (xmid, ymid) is on the first ellipse 'between' the two
+     //-- sorted intersection points (xint[1], yint[1]) and (xint[2], yint[2])
+     //-- when travelling counter- clockwise from (xint[1], yint[1]) to 
+     //-- (xint[2], yint[2]).  If the point (xmid, ymid) is inside the second 
+     //-- ellipse, then one desired segment of ellipse 1 contains the point 
+     //-- (xmid, ymid), so integrate counterclockwise from (xint[1], yint[1])
+     //-- to (xint[2], yint[2]) for the first segment, and from 
+     //-- (xint[3], yint[3] to (xint[4], yint[4]) for the second segment.
+     if (ellipse2tr (xmid, ymid, AA, BB, CC, DD, EE, FF) < 0.0)
+     {
+          area2 = 0.5*(A1B1*(theta[1] - theta[0])
+                       - fabs (xint[0]*yint[1] - xint[1]*yint[0]));
 	    
-                              area2 = 0.5*(A1B1*(theta[1] - theta[0])
-                                           - fabs (xint[0]*yint[1] - xint[1]*yint[0]));
+          area2 = 0.5*(A1B1*(theta[1] - theta[0])
+                       - fabs (xint[0]*yint[1] - xint[1]*yint[0]));
 
-                              area4 = 0.5*(A2B2*(theta_tr[2] - theta_tr[1]) - fabs (xint_tr[1]*yint_tr[2] - xint_tr[2]*yint_tr[1]) );
+          area4 = 0.5*(A2B2*(theta_tr[2] - theta_tr[1]) - fabs (xint_tr[1]*yint_tr[2] - xint_tr[2]*yint_tr[1]) );
 			
-                              if (theta_tr[3] > theta_tr[0])
-                                   area5 = 0.5*(A2B2*(theta_tr[0] - (theta_tr[3] - twopi))
-                                                - fabs (xint_tr[3]*yint_tr[0] - xint_tr[0]*yint_tr[3]));
-                              else
-                                   area5 = 0.5*(A2B2*(theta_tr[0] - theta_tr[3])
-                                                - fabs (xint_tr[3]*yint_tr[0] - xint_tr[0]*yint_tr[3]));
-                         }
-                         else
-                         {
-                              area2 = 0.5*(A1B1*(theta[2] - theta[1])
-                                           - fabs (xint[1]*yint[2] - xint[2]*yint[1]));
-                              area3 = 0.5*(A1B1*(theta[0] - (theta[3] - twopi))
-                                           - fabs (xint[3]*yint[0] - xint[0]*yint[3]));
-                              area4 = 0.5*(A2B2*(theta_tr[1] - theta_tr[0])
-                                           - fabs (xint_tr[0]*yint_tr[1] - xint_tr[1]*yint_tr[0]));
-                              area5 = 0.5*(A2B2*(theta_tr[3] - theta_tr[2])
-                                           - fabs (xint_tr[2]*yint_tr[3] - xint_tr[3]*yint_tr[2]));
-                         }
-                         if(area5<0)
-                         {
+          if (theta_tr[3] > theta_tr[0])
+               area5 = 0.5*(A2B2*(theta_tr[0] - (theta_tr[3] - twopi))
+                            - fabs (xint_tr[3]*yint_tr[0] - xint_tr[0]*yint_tr[3]));
+          else
+               area5 = 0.5*(A2B2*(theta_tr[0] - theta_tr[3])
+                            - fabs (xint_tr[3]*yint_tr[0] - xint_tr[0]*yint_tr[3]));
+     }
+     else
+     {
+          area2 = 0.5*(A1B1*(theta[2] - theta[1])
+                       - fabs (xint[1]*yint[2] - xint[2]*yint[1]));
+          area3 = 0.5*(A1B1*(theta[0] - (theta[3] - twopi))
+                       - fabs (xint[3]*yint[0] - xint[0]*yint[3]));
+          area4 = 0.5*(A2B2*(theta_tr[1] - theta_tr[0])
+                       - fabs (xint_tr[0]*yint_tr[1] - xint_tr[1]*yint_tr[0]));
+          area5 = 0.5*(A2B2*(theta_tr[3] - theta_tr[2])
+                       - fabs (xint_tr[2]*yint_tr[3] - xint_tr[3]*yint_tr[2]));
+     }
+     if(area5<0)
+     {
 #if DEBUG
-                              printf("\n\t\t-------------> area5 is negativ (%f). Add: pi*A2*B2=%f <------------\n",area5, Area_2);
+          printf("\n\t\t-------------> area5 is negativ (%f). Add: pi*A2*B2=%f <------------\n",area5, Area_2);
 #endif
-                              area5 += Area_2;
-                         }
-                         if(area4<0)
-                         {
+          area5 += Area_2;
+     }
+     if(area4<0)
+     {
 #if DEBUG
-                              printf("\n\t\t-------------> area4 is negativ (%f). Add: pi*A2*B2=%f <------------\n",area4, Area_2);
+          printf("\n\t\t-------------> area4 is negativ (%f). Add: pi*A2*B2=%f <------------\n",area4, Area_2);
 #endif
-                              area4 += Area_2;
-                         }
-                         if(area3<0)
-                         {
+          area4 += Area_2;
+     }
+     if(area3<0)
+     {
 #if DEBUG
-                              printf("\n\t\t-------------> area3 is negativ (%f). Add: pi*A2*B2=%f <------------\n",area3, Area_1);
+          printf("\n\t\t-------------> area3 is negativ (%f). Add: pi*A2*B2=%f <------------\n",area3, Area_1);
 #endif
-                              area3 += Area_1;
-                         }
-                         if(area2<0)
-                         {
+          area3 += Area_1;
+     }
+     if(area2<0)
+     {
 #if DEBUG
-                              printf("\n\t\t-------------> area2 is negativ (%f). Add: pi*A2*B2=%f <------------\n",area2, Area_1);
+          printf("\n\t\t-------------> area2 is negativ (%f). Add: pi*A2*B2=%f <------------\n",area2, Area_1);
 #endif
-                              area2 += Area_1;
-                         }
+          area2 += Area_1;
+     }
 		
 #if DEBUG
-                         printf("\narea1=%f, area2=%f area3=%f, area4=%f, area5=%f\n\n",area1, area2, area3, area4, area5);
+     printf("\narea1=%f, area2=%f area3=%f, area4=%f, area5=%f\n\n",area1, area2, area3, area4, area5);
 #endif
-                         OverlapArea = area1 + area2 + area3 + area4 + area5;
+     OverlapArea = area1 + area2 + area3 + area4 + area5;
 	
-                         (*rtnCode) = FOUR_INTERSECTION_POINTS;
-                         return OverlapArea;
-                    }
+     (*rtnCode) = FOUR_INTERSECTION_POINTS;
+     return OverlapArea;
+}
 
 //-- check whether an intersection point is a tangent or a cross-point
-                    int istanpt (double x, double y, double A1, double B1, double AA, double BB,
-                                 double CC, double DD, double EE, double FF)
-                    {
-                         double x1, y1, x2, y2, theta, test1, test2, eps_radian;
+int istanpt (double x, double y, double A1, double B1, double AA, double BB,
+             double CC, double DD, double EE, double FF)
+{
+     double x1, y1, x2, y2, theta, test1, test2, eps_radian;
 
-                         //-- Avoid inverse trig calculation errors: there could be an error 
-                         //-- if |x1/A| > 1.0 when calling acos().  If execution arrives here, 
-                         //-- then the point is on the ellipse within EPS.
-                         if (fabs (x) > A1)
-                              x = (x < 0) ? -A1 : A1;
+     //-- Avoid inverse trig calculation errors: there could be an error 
+     //-- if |x1/A| > 1.0 when calling acos().  If execution arrives here, 
+     //-- then the point is on the ellipse within EPS.
+     if (fabs (x) > A1)
+          x = (x < 0) ? -A1 : A1;
 
-                         //-- Calculate the parametric angle on the ellipse for (x, y)
-                         //-- The parametric angles depend on the quadrant where each point
-                         //-- is located.  See Table 1 in the reference.
-                         if (y < 0.0) 	 //-- Quadrant III or IV
-                              theta = twopi - acos (x / A1);
-                         else             //-- Quadrant I or II      
-                              theta = acos (x / A1);
+     //-- Calculate the parametric angle on the ellipse for (x, y)
+     //-- The parametric angles depend on the quadrant where each point
+     //-- is located.  See Table 1 in the reference.
+     if (y < 0.0) 	 //-- Quadrant III or IV
+          theta = twopi - acos (x / A1);
+     else             //-- Quadrant I or II      
+          theta = acos (x / A1);
 
-                         //-- determine the distance from the origin to the point (x, y)
-                         /* branch = sqrt (x*x + y*y); */
+     //-- determine the distance from the origin to the point (x, y)
+     /* branch = sqrt (x*x + y*y); */
 
-                         /* //-- use the distance to find a small angle, such that the distance */
-                         /* //-- along ellipse 1 is approximately 2*EPS */
-                         /* if (branch < 100.0*EPS) */
-                         /* 	eps_radian = 2.0*EPS; */
-                         /* else */
-                         /* 	eps_radian = asin (2.0*EPS/branch); */
+     /* //-- use the distance to find a small angle, such that the distance */
+     /* //-- along ellipse 1 is approximately 2*EPS */
+     /* if (branch < 100.0*EPS) */
+     /* 	eps_radian = 2.0*EPS; */
+     /* else */
+     /* 	eps_radian = asin (2.0*EPS/branch); */
 	
-                         //fix 24.11.12
-                         eps_radian = 0.1; //arbitrary value
+     //fix 24.11.12
+     eps_radian = 0.1; //arbitrary value
 	
-                         //-- determine two points that are on each side of (x, y) and lie on
-                         //-- the first ellipse
-                         x1 = A1*cos (theta + eps_radian);
-                         y1 = B1*sin (theta + eps_radian);
-                         x2 = A1*cos (theta - eps_radian);
-                         y2 = B1*sin (theta - eps_radian);
+     //-- determine two points that are on each side of (x, y) and lie on
+     //-- the first ellipse
+     x1 = A1*cos (theta + eps_radian);
+     y1 = B1*sin (theta + eps_radian);
+     x2 = A1*cos (theta - eps_radian);
+     y2 = B1*sin (theta - eps_radian);
 	
-                         //-- evaluate the two adjacent points in the second ellipse equation
-                         test1 = ellipse2tr (x1, y1, AA, BB, CC, DD, EE, FF);
-                         test2 = ellipse2tr (x2, y2, AA, BB, CC, DD, EE, FF);
+     //-- evaluate the two adjacent points in the second ellipse equation
+     test1 = ellipse2tr (x1, y1, AA, BB, CC, DD, EE, FF);
+     test2 = ellipse2tr (x2, y2, AA, BB, CC, DD, EE, FF);
 
-                         //-- if the ellipses are tangent at the intersection point, then
-                         //-- points on both sides will either both be inside ellipse 1, or
-                         //-- they will both be outside ellipse 1
+     //-- if the ellipses are tangent at the intersection point, then
+     //-- points on both sides will either both be inside ellipse 1, or
+     //-- they will both be outside ellipse 1
 #if DEBUG
-                         printf("\t\t--- debug istanpt with (x,y)=(%f, %f), A1=%f, B1=%f\n", x, y, A1, B1);
-                         printf("theta=%f\n", theta);
-                         printf("eps_Radian=%f\n", eps_radian);
-                         printf("(x1, y1)=(%f, %f)\n", x1, y1);
-                         printf("(x2, y2)=(%f, %f)\n", x2, y2);
-                         printf("test1=%f\n", test1);
-                         printf("test2=%f\n", test2);
+     printf("\t\t--- debug istanpt with (x,y)=(%f, %f), A1=%f, B1=%f\n", x, y, A1, B1);
+     printf("theta=%f\n", theta);
+     printf("eps_Radian=%f\n", eps_radian);
+     printf("(x1, y1)=(%f, %f)\n", x1, y1);
+     printf("(x2, y2)=(%f, %f)\n", x2, y2);
+     printf("test1=%f\n", test1);
+     printf("test2=%f\n", test2);
 #endif
 
-                         if ((test1*test2) > 0.0)
-                              return TANGENT_POINT;
-                         else
-                              return INTERSECTION_POINT;
-                    }
+     if ((test1*test2) > 0.0)
+          return TANGENT_POINT;
+     else
+          return INTERSECTION_POINT;
+}
 
 //===========================================================================
 //-- CACM Algorithm 326: Roots of low order polynomials.
@@ -1179,217 +1208,217 @@ double ellipse_ellipse_overlap (double PHI_1, double A1, double B1,
 //-- where appropriate, some other slight modifications for readability
 //-- and debugging ease.
 //===========================================================================
-                    void QUADROOTS (double p[], double r[][5])
-                    {
-                         /*
+void QUADROOTS (double p[], double r[][5])
+{
+     /*
       Array r[3][5]  p[5]
       Roots of poly p[0]*x^2 + p[1]*x + p[2]=0
       x=r[1][k] + i r[2][k]  k=1,2
     */
-                         double b,c,d;
-                         b=-p[1]/(2.0*p[0]);
-                         c=p[2]/p[0];
-                         d=b*b-c;
-                         if(d>=0.0)
-                         {
-                         if(b>0.0)
-                              b=(r[1][2]=(sqrt(d)+b));
-                         else
-                              b=(r[1][2]=(-sqrt(d)+b));
-                         r[1][1]=c/b;
-                         r[2][1]=(r[2][2]=0.0);
-                    }
-                         else
-                         {
-                         d=(r[2][1]=sqrt(-d));
-                         r[2][2]=-d;
-                         r[1][1]=(r[1][2]=b);
-                    }
-                         return;
-                    }
+     double b,c,d;
+     b=-p[1]/(2.0*p[0]);
+     c=p[2]/p[0];
+     d=b*b-c;
+     if(d>=0.0)
+     {
+          if(b>0.0)
+               b=(r[1][2]=(sqrt(d)+b));
+          else
+               b=(r[1][2]=(-sqrt(d)+b));
+          r[1][1]=c/b;
+          r[2][1]=(r[2][2]=0.0);
+     }
+     else
+     {
+          d=(r[2][1]=sqrt(-d));
+          r[2][2]=-d;
+          r[1][1]=(r[1][2]=b);
+     }
+     return;
+}
 
-                    void CUBICROOTS(double p[], double r[][5])
-                    {
-                         /*
+void CUBICROOTS(double p[], double r[][5])
+{
+     /*
       Array r[3][5]  p[5]
       Roots of poly p[0]*x^3 + p[1]*x^2 + p[2]*x + p[3] = 0
       x=r[1][k] + i r[2][k]  k=1,...,3
       Assumes 0<arctan(x)<pi/2 for x>0
     */
-                         double s,t,b,c,d;
-                         int k;
-                         if(p[0]!=1.0)
-                         {
-                         for(k=1;k<4;k++)
-                              p[k]=p[k]/p[0];
-                         p[0]=1.0;
-                    }
-                         s=p[1]/3.0;
-                         t=s*p[1];
-                         b=0.5*(s*(t/1.5-p[2])+p[3]);
-                         t=(t-p[2])/3.0;
-                         c=t*t*t;
-                         d=b*b-c;
-                         if(d>=0.0)
-                         {
-                         d=pow((sqrt(d)+fabs(b)),1.0/3.0);
-                         if(d!=0.0)
-                         {
-                         if(b>0.0)
-                              b=-d;
-                         else
-                              b=d;
-                         c=t/b;
-                    }
-                         d=r[2][2]=sqrt(0.75)*(b-c);
-                         b=b+c;
-                         c=r[1][2]=-0.5*b-s;
-                         if((b>0.0 && s<=0.0) || (b<0.0 && s>0.0))
-                         {
-                         r[1][1]=c;
-                         r[2][1]=-d;
-                         r[1][3]=b-s;
-                         r[2][3]=0.0;
-                    }
-                         else
-                         {
-                         r[1][1]=b-s;
-                         r[2][1]=0.0;
-                         r[1][3]=c;
-                         r[2][3]=-d;
-                    }
-                    }  /* end 2 equal or complex roots */
-                         else
-                         {
-                         if(b==0.0)
-                              d=atan(1.0)/1.5;
-                         else
-                              d=atan(sqrt(-d)/fabs(b))/3.0;
-                         if(b<0.0)
-                              b=2.0*sqrt(t);
-                         else
-                              b=-2.0*sqrt(t);
-                         c=cos(d)*b;
-                         t=-sqrt(0.75)*sin(d)*b-0.5*c;
-                         d=-t-c-s;
-                         c=c-s;
-                         t=t-s;
+     double s,t,b,c,d;
+     int k;
+     if(p[0]!=1.0)
+     {
+          for(k=1;k<4;k++)
+               p[k]=p[k]/p[0];
+          p[0]=1.0;
+     }
+     s=p[1]/3.0;
+     t=s*p[1];
+     b=0.5*(s*(t/1.5-p[2])+p[3]);
+     t=(t-p[2])/3.0;
+     c=t*t*t;
+     d=b*b-c;
+     if(d>=0.0)
+     {
+          d=pow((sqrt(d)+fabs(b)),1.0/3.0);
+          if(d!=0.0)
+          {
+               if(b>0.0)
+                    b=-d;
+               else
+                    b=d;
+               c=t/b;
+          }
+          d=r[2][2]=sqrt(0.75)*(b-c);
+          b=b+c;
+          c=r[1][2]=-0.5*b-s;
+          if((b>0.0 && s<=0.0) || (b<0.0 && s>0.0))
+          {
+               r[1][1]=c;
+               r[2][1]=-d;
+               r[1][3]=b-s;
+               r[2][3]=0.0;
+          }
+          else
+          {
+               r[1][1]=b-s;
+               r[2][1]=0.0;
+               r[1][3]=c;
+               r[2][3]=-d;
+          }
+     }  /* end 2 equal or complex roots */
+     else
+     {
+          if(b==0.0)
+               d=atan(1.0)/1.5;
+          else
+               d=atan(sqrt(-d)/fabs(b))/3.0;
+          if(b<0.0)
+               b=2.0*sqrt(t);
+          else
+               b=-2.0*sqrt(t);
+          c=cos(d)*b;
+          t=-sqrt(0.75)*sin(d)*b-0.5*c;
+          d=-t-c-s;
+          c=c-s;
+          t=t-s;
       
-                         if(fabs(c)>fabs(t))
-                         {
-                         r[1][3]=c;
-                    }
-                         else
-                         {
-                         r[1][3]=t;
-                         t=c;
-                    }
-                         if(fabs(d)>fabs(t))
-                         {
-                         r[1][2]=d;
-                    }
-                         else
-                         {
-                         r[1][2]=t;
-                         t=d;
-                    }
-                         r[1][1]=t;
-                         for(k=1;k<4;k++)
-                              r[2][k]=0.0;
-                    }
-                         return;
-                    }
+          if(fabs(c)>fabs(t))
+          {
+               r[1][3]=c;
+          }
+          else
+          {
+               r[1][3]=t;
+               t=c;
+          }
+          if(fabs(d)>fabs(t))
+          {
+               r[1][2]=d;
+          }
+          else
+          {
+               r[1][2]=t;
+               t=d;
+          }
+          r[1][1]=t;
+          for(k=1;k<4;k++)
+               r[2][k]=0.0;
+     }
+     return;
+}
 
-                    void BIQUADROOTS(double p[],double r[][5])
-                    {
-                         /*
+void BIQUADROOTS(double p[],double r[][5])
+{
+     /*
       Array r[3][5]  p[5]
       Roots of poly p[0]*x^4 + p[1]*x^3 + p[2]*x^2 + p[3]*x + p[4] = 0
       x=r[1][k] + i r[2][k]  k=1,...,4
     */
-                         double a,b,c,d,e;
-                         int k,j;
-                         if(p[0] != 1.0)
-                         {
-                              for(k=1;k<5;k++)
-                                   p[k]=p[k]/p[0];
-                              p[0]=1.0;
-                         }
-                         e=0.25*p[1];
-                         b=2.0*e;
-                         c=b*b;
-                         d=0.75*c;
-                         b=p[3]+b*(c-p[2]);
-                         a=p[2]-d;
-                         c=p[4]+e*(e*a-p[3]);
-                         a=a-d;
-                         p[1]=0.5*a;
-                         p[2]=(p[1]*p[1]-c)*0.25;
-                         p[3]=b*b/(-64.0);
-                         if(p[3]<0.0)
-                         {
-                              CUBICROOTS(p,r);
-                              for(k=1;k<4;k++)
-                              {
-                                   if(r[2][k]==0.0 && r[1][k]>0.0)
-                                   {
-                                        d=r[1][k]*4.0;
-                                        a=a+d;
-                                        if(a>=0.0 && b>=0.0)
-                                             p[1]=sqrt(d);
-                                        else if(a<=0.0 && b<=0.0)
-                                             p[1]=sqrt(d);
-                                        else
-                                             p[1]=-sqrt(d);
-                                        b=0.5*(a+b/p[1]);
-                                        goto QUAD;
-                                   }
-                              }
-                         }
-                         if(p[2]<0.0)
-                         {
-                              b=sqrt(c);
-                              d=b+b-a;
-                              p[1]=0.0;
-                              if(d>0.0)
-                                   p[1]=sqrt(d);
-                         }
-                         else
-                         {
-                              if(p[1]>0.0)
-                                   b=sqrt(p[2])*2.0+p[1];
-                              else
-                                   b=-sqrt(p[2])*2.0+p[1];
-                              if(b!=0.0)
-                              {
-                                   p[1]=0.0;
-                              }
-                              else
-                              {
-                                   for(k=1;k<5;k++)
-                                   {
-                                        r[1][k]=-e;
-                                        r[2][k]=0.0;
-                                   }
-                                   goto END;
-                              }
-                         }
-                    QUAD:
+     double a,b,c,d,e;
+     int k,j;
+     if(p[0] != 1.0)
+     {
+          for(k=1;k<5;k++)
+               p[k]=p[k]/p[0];
+          p[0]=1.0;
+     }
+     e=0.25*p[1];
+     b=2.0*e;
+     c=b*b;
+     d=0.75*c;
+     b=p[3]+b*(c-p[2]);
+     a=p[2]-d;
+     c=p[4]+e*(e*a-p[3]);
+     a=a-d;
+     p[1]=0.5*a;
+     p[2]=(p[1]*p[1]-c)*0.25;
+     p[3]=b*b/(-64.0);
+     if(p[3]<0.0)
+     {
+          CUBICROOTS(p,r);
+          for(k=1;k<4;k++)
+          {
+               if(r[2][k]==0.0 && r[1][k]>0.0)
+               {
+                    d=r[1][k]*4.0;
+                    a=a+d;
+                    if(a>=0.0 && b>=0.0)
+                         p[1]=sqrt(d);
+                    else if(a<=0.0 && b<=0.0)
+                         p[1]=sqrt(d);
+                    else
+                         p[1]=-sqrt(d);
+                    b=0.5*(a+b/p[1]);
+                    goto QUAD;
+               }
+          }
+     }
+     if(p[2]<0.0)
+     {
+          b=sqrt(c);
+          d=b+b-a;
+          p[1]=0.0;
+          if(d>0.0)
+               p[1]=sqrt(d);
+     }
+     else
+     {
+          if(p[1]>0.0)
+               b=sqrt(p[2])*2.0+p[1];
+          else
+               b=-sqrt(p[2])*2.0+p[1];
+          if(b!=0.0)
+          {
+               p[1]=0.0;
+          }
+          else
+          {
+               for(k=1;k<5;k++)
+               {
+                    r[1][k]=-e;
+                    r[2][k]=0.0;
+               }
+               goto END;
+          }
+     }
+QUAD:
 
-                         p[2]=c/b;
-                         QUADROOTS(p,r);
-                         for(k=1;k<3;k++)
-                              for(j=1;j<3;j++)
-                                   r[j][k+2]=r[j][k];
-                         p[1]=-p[1];
-                         p[2]=b;
-                         QUADROOTS(p,r);
-                         for(k=1;k<5;k++)
-                         {
-                              r[1][k]=r[1][k]-e;
-                         }
-                    END:
-                         for(k=1;k<5;k++)
-                              return;
-                    }
+     p[2]=c/b;
+     QUADROOTS(p,r);
+     for(k=1;k<3;k++)
+          for(j=1;j<3;j++)
+               r[j][k+2]=r[j][k];
+     p[1]=-p[1];
+     p[2]=b;
+     QUADROOTS(p,r);
+     for(k=1;k<5;k++)
+     {
+          r[1][k]=r[1][k]-e;
+     }
+END:
+     for(k=1;k<5;k++)
+          return;
+}
 

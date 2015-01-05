@@ -31,7 +31,9 @@ double ellipse_ellipse_overlap (double PHI_1, double A1, double B1,
                                 double H1, double K1, double PHI_2, 
                                 double A2, double B2, double H2, double K2, 
                                 double X[4], double Y[4], int * nroots,
-                                int *rtnCode);
+                                int *rtnCode, int choice); 
+//choice=1: use gsl_poly_complex_solve()
+//choice=2: use Andreas Steiner's gsl_poly_complex_solve_quartic()
                              
 
 //putting current date in a filename
@@ -45,9 +47,11 @@ void  setFileName(char * name)
     time(&now);  
     today = localtime(&now);
     //print it in DD_MM_YY_H_M_S format.
-    strftime(date, 25, "%d_%m_%Y_%H_%M_%S", today);
-    strcat(name, "_");
-    strcat(name, date);
+   
+    // strftime(date, 25, "%d_%m_%Y_%H_%M_%S", today);
+    // strcat(name, "_");
+    // strcat(name, date);
+
     strcat(name, ".txt");
 }
 
@@ -76,15 +80,20 @@ int ellipse2poly(float PHI_1, float A1, float B1, float H1, float K1, polygon_2d
     float step = pi/n;
     float sinphi = sin(w);
     float cosphi = cos(w);
-    //std::cout << "step: " << step << "  sin=  " << sinphi << "  cos= " << cosphi << std::endl;
+    // std::cout << "step: " << step << "  sin=  " << sinphi << "  cos= " << cosphi << std::endl;
     for(i=0; i<2*n+1; i++)
     {   
         x = xc + a*cos(t)*cosphi - b*sin(t)*sinphi;
         y = yc + a*cos(t)*sinphi + b*sin(t)*cosphi;
+        if(fabs(x) < 1e-4) x = 0;
+        if(fabs(y) < 1e-4) y = 0;
+
         coor[i][0] = x;
         coor[i][1] = y;
         t += step;
+        // std::cout << "x=  " << x << " | y= " << y << std::endl;
     }
+
     assign_points(poly, coor);
     correct(poly);
     *po = poly;
@@ -96,14 +105,16 @@ float getOverlapingAreaPoly(polygon_2d poly, polygon_2d poly2)
 {
     float overAreaPoly = 0.0;    
     std::deque<polygon_2d> output;
-    boost::geometry::intersection(poly, poly2, output);
-
-    //int i = 0;
-
+    bool ret = boost::geometry::intersection(poly, poly2, output);
+    if(!ret) {
+         std::cout << "Could not calculate the overlap of the polygons\n";
+         exit(-1);
+    }
+    // int i = 0;
     BOOST_FOREACH(polygon_2d const& p, output)
     {
         overAreaPoly = boost::geometry::area(p);
-        //std::cout << i++ << ": " << std::endl;
+        // std::cout << i++ << ": " << std::endl;
     }
     return overAreaPoly;
 }
@@ -127,6 +138,8 @@ int main (int argc, char ** argv)
         printf("Usage: %s inputfile\n exit...\n", argv[0]);
         exit(-1);
     }
+    int choice;
+    choice = atoi(argv[2]);
     printf ("Calling ellipse_ellipse_overlap.c\n\n");
 
     int MAXITER = 1, i; //MAXITER: to compare the run-time of poly- and analytical solution.
@@ -184,7 +197,10 @@ int main (int argc, char ** argv)
         //fgets(dummy, 255, f); //ignore first line. depends on file      
         fprintf(hf, "#roots: id x0 \ty0 \tx1 \ty1  x2 \ty2 ...\n");
         //fprintf(gf, "#no\t area_1\t\t area_2\t\t area_ellipse\t area_polygon\t err\n");
-       
+        double x[4], y[4];
+        int nroots;
+
+        
         while (1){
             isc = fscanf(f,"%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",&id, &A1, &B1, &H1, &K1, &PHI_1, &A2, &B2, &H2, &K2, &PHI_2); 
             
@@ -192,27 +208,25 @@ int main (int argc, char ** argv)
                 // printf("isc=%d\n",isc);
                 break;
             }
-            //printf("id=%d,  A1=%f,  B1=%f,  H1=%f,  K1=%f,  PHI_1=%f,  A2=%f,  B2=%f,  H2=%f,  K2=%f,  PHI_2=%f\n",id, A1, B1, H1, K1, PHI_1, A2, B2, H2, K2, PHI_2);
+            // printf("id=%d,  A1=%f,  B1=%f,  H1=%f,  K1=%f,  PHI_1=%f,  A2=%f,  B2=%f,  H2=%f,  K2=%f,  PHI_2=%f\n",id, A1, B1, H1, K1, PHI_1, A2, B2, H2, K2, PHI_2);
             /////////////////////////////////////////////////////////////////////////
             if(convert_to_radian)
             {
                 PHI_1 = PHI_1 *180.0/pi;
                 PHI_2 = PHI_2 *180.0/pi;
             }
+//---------------------------------------
+            
             t_se = get_time();
-            double x[4], y[4];
-            int nroots;
-          
             area = ellipse_ellipse_overlap (PHI_1, A1, B1, H1, K1,
-                                            PHI_2, A2, B2, H2, K2, x, y, &nroots, &rtn);
-          
+                                            PHI_2, A2, B2, H2, K2, x, y, &nroots, &rtn, choice);
             t_fe = get_time();
-            time_e += (t_fe - t_se)*1000;
-            ellipse2poly(PHI_1, A1, B1, H1, K1, &poly);
-            ellipse2poly(PHI_2, A2, B2, H2, K2, &poly2);
-            t_sp = get_time();
 
-            areaPoly = getOverlapingAreaPoly(poly, poly2);
+            time_e += (t_fe - t_se)*1000;
+             ellipse2poly(PHI_1, A1, B1, H1, K1, &poly);
+             ellipse2poly(PHI_2, A2, B2, H2, K2, &poly2);
+             t_sp = get_time();
+             areaPoly = getOverlapingAreaPoly(poly, poly2);
             t_fp = get_time();
             time_p += (t_fp - t_sp)*1000;
                     
@@ -227,14 +241,15 @@ int main (int argc, char ** argv)
 
             // output roots
             fprintf(hf, " %d ",id);
-            for(i=0; i<nroots; i++)
+
+           for(i=0; i<nroots; i++)
                 fprintf(hf, "  %f  %f  ", x[i], y[i]);
             fprintf(hf, "\n");
 
             //output results
             fprintf(gf, "%d    %10.4f    %10.4f    %10.4f    %10.4f    %10.4f\n", id, pi*A1*B1, pi*A2*B2, area, areaPoly, err);
         
-            //printf ("Case %d: area = %15.8f, return_value = %d, PolyArea = %15.8f (rel_err=%f)\n", id, area, rtn, areaPoly, err);
+            printf ("Case %d: area = %15.8f, return_value = %d, PolyArea = %15.8f (rel_err=%f)\n", id, area, rtn, areaPoly, err);
             //printf("=====================================================================================\n");
                     
             ////////////////////////////////////////////////////////////////////////
@@ -246,7 +261,7 @@ int main (int argc, char ** argv)
         fclose(hf);
     }//MAXITER
     printf("\nrun time: %d cases. Analytical solution = %8.4lf [ms] |  Polygon approximation = %8.4lf [ms]\n", counter, time_e, time_p);
-    printf("run python plot.py %s  %s to plot the results\n", inputFile, resultFile);
+    printf("run python plot.py %s  %s to plot the results\n", inputFile, rootsFile);
     fprintf(stderr, "%d  %f %f %f\n", n, time_e, time_p, meanErr/counter);
     return rtn; 
 }
