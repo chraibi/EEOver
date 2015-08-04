@@ -2,7 +2,7 @@ CC      = g++
 CFLAGS  = -Wall -g 
 LDFLAGS = -lgsl -lgslcblas
 
-OBJ = ellipse_ellipse_overlap.o call_ee.o
+OBJ = ellipse_ellipse_overlap.o call_ee.o gsl_poly.o zsolve_quartic.o
 
 prog: $(OBJ)
 	$(CC) $(CFLAGS) -o overlap $(OBJ) $(LDFLAGS)

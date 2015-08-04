@@ -31,7 +31,9 @@ double ellipse_ellipse_overlap (double PHI_1, double A1, double B1,
                                 double H1, double K1, double PHI_2, 
                                 double A2, double B2, double H2, double K2, 
                                 double X[4], double Y[4], int * nroots,
-                                int *rtnCode);
+                                int *rtnCode, int choice); 
+//choice=1: use gsl_poly_complex_solve()
+//choice=2: use Andreas Steiner's gsl_poly_complex_solve_quartic()
                              
 
 //putting current date in a filename
@@ -45,9 +47,11 @@ void  setFileName(char * name)
     time(&now);  
     today = localtime(&now);
     //print it in DD_MM_YY_H_M_S format.
-    strftime(date, 25, "%d_%m_%Y_%H_%M_%S", today);
-    strcat(name, "_");
-    strcat(name, date);
+   
+    // strftime(date, 25, "%d_%m_%Y_%H_%M_%S", today);
+    // strcat(name, "_");
+    // strcat(name, date);
+
     strcat(name, ".txt");
 }
 
@@ -76,15 +80,20 @@ int ellipse2poly(float PHI_1, float A1, float B1, float H1, float K1, polygon_2d
     float step = pi/n;
     float sinphi = sin(w);
     float cosphi = cos(w);
-    //std::cout << "step: " << step << "  sin=  " << sinphi << "  cos= " << cosphi << std::endl;
+    // std::cout << "step: " << step << "  sin=  " << sinphi << "  cos= " << cosphi << std::endl;
     for(i=0; i<2*n+1; i++)
     {   
         x = xc + a*cos(t)*cosphi - b*sin(t)*sinphi;
         y = yc + a*cos(t)*sinphi + b*sin(t)*cosphi;
+        if(fabs(x) < 1e-4) x = 0;
+        if(fabs(y) < 1e-4) y = 0;
+
         coor[i][0] = x;
         coor[i][1] = y;
         t += step;
+        // std::cout << "x=  " << x << " | y= " << y << std::endl;
     }
+
     assign_points(poly, coor);
     correct(poly);
     *po = poly;
@@ -96,14 +105,16 @@ float getOverlapingAreaPoly(polygon_2d poly, polygon_2d poly2)
 {
     float overAreaPoly = 0.0;    
     std::deque<polygon_2d> output;
-    boost::geometry::intersection(poly, poly2, output);
-
-    //int i = 0;
-
+    bool ret = boost::geometry::intersection(poly, poly2, output);
+    if(!ret) {
+         std::cout << "Could not calculate the overlap of the polygons\n";
+         exit(-1);
+    }
+    // int i = 0;
     BOOST_FOREACH(polygon_2d const& p, output)
     {
         overAreaPoly = boost::geometry::area(p);
-        //std::cout << i++ << ": " << std::endl;
+        // std::cout << i++ << ": " << std::endl;
     }
     return overAreaPoly;
 }
@@ -127,6 +138,8 @@ int main (int argc, char ** argv)
         printf("Usage: %s inputfile\n exit...\n", argv[0]);
         exit(-1);
     }
+    int choice;
+    choice = atoi(argv[2]);
     printf ("Calling ellipse_ellipse_overlap.c\n\n");
 
 	int i;
@@ -156,3 +169,13 @@ int main (int argc, char ** argv)
     fprintf(stderr, "%d  %f %f %f\n", n, time_e, time_p, meanErr/counter);
     return rtn; 
 }
+
+
+
+
+
+
+
+
+
+

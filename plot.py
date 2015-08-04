@@ -3,34 +3,48 @@ from numpy import *
 import pylab
 from matplotlib.patches import Ellipse
 from math import pi
-
+import os, shutil
 from sys import argv
 
+if len(argv)< 4:
+    print ("Usage: python %s ellipseDataFile rootsFile resultsFile"%argv[0])
+    sys.exit()
 
-if len(argv)< 3:
-    print "Usage: python %s ellipseDataFile rootsFile"%argv[0]
-    exit()
+
+DIR = "cases" # put the figs here
     
-filename = argv[1]  # testcases.txt
-rootsfile = argv[2]  #roots.txt
+if os.path.exists(DIR):
+    print ("Delete directory <%s>"%DIR)
+    shutil.rmtree(DIR)
+    print ("Create directory <%s>"%DIR)
+    os.makedirs(DIR)
+else:
+    os.makedirs(DIR)
+    print ("Directory <%s> does not exist. Create one .."%DIR)
 
-print "got input",filename
-print "got roots",rootsfile
+filename = argv[1]  # testcases.txt
+rootsfile = argv[2]  # roots
+resultsfile = argv[3]  # areas
+
+print ("got input",filename)
+print ("got roots",rootsfile)
+print ("got roots",resultsfile)
 
 f = open (rootsfile)
 data = loadtxt(filename)
-data = np.atleast_2d(data)
+data = np.atleast_2d(data) # for the case that we have only one case
+
+areas = loadtxt(resultsfile)
+areas = np.atleast_2d(areas)
 roots = [line.split() for line in f if not line.startswith("#")]
-print "roots ", roots
+
 ids = range(data.shape[0]) #unique(data[:,0]).astype(int)
-print "ids=",ids
+
 for Id in ids:
     #PHI should be in radian
-    #d = data[ data[:,0] == Id ] # Id should start with 0. So this is not save, since some users dont care too much
     d = data[Id, :]
-
-    print "Id=",Id
-    print "d",d
+    area = areas[Id,:] 
+    index = d[0]
     A1 = d[1]
     B1 = d[2]
     H1 = d[3]
@@ -42,72 +56,42 @@ for Id in ids:
     K2 = d[9]
     PHI_2 = d[10]
     
-    print "A1=", A1, "B1=", B1, "H1=", H1, "K1=", K1, "PhI_1=",PHI_1 
-    print "A2=", A2, "B2=", B2, "H2=", H2, "K2=", K2, "PhI_2=",PHI_2 
     while PHI_1 >=pi:  #fmod is not so acurate. I prefere doing a simple substraction
         PHI_1 -= pi
-        print " >> PhI_1=",PHI_1 
+        
     while PHI_2 >=pi:
         PHI_2 -= pi
-        print " >> PhI_2=",PHI_2
+
     # get the roots
     #
-    r = roots[Id]#roots[roots[:,0]==Id]
+    r = roots[Id]
     length = len(r) - 1
-    # if not length:
-    #   continue
-    print "Id", Id
-    print "nroots ", length 
-    #print "roots ", roots
-
 
     pylab.axes()
-    #pylab.subplot(211)
-
     ms=9
     
     cir = Ellipse(xy=(H1,K1), width=2*A1, height=2*B1, angle=PHI_1*180/pi,  alpha = .2, fc='r', lw=3)
     plot(H1, K1, "or", ms=ms)
     plot(H2, K2, "ob", ms=ms)
-    print "plot red line"
-    print [H1+ A1*cos(PHI_1+pi), H1 + A1*cos(PHI_1)]
-    print [K1+ A1*sin(PHI_1+pi), K1 + A1*sin(PHI_1)]
-    #plot([H1+ A1*cos(PHI_1+pi), H1 + A1*cos(PHI_1)], [K1+ A1*sin(PHI_1+pi), K1 + A1*sin(PHI_1)], "--r", lw=2)
-    #plot([H1+ B1*cos(PHI_1+pi+pi/2), H1 + B1*cos(PHI_1+pi/2)], [K1+ B1*sin(PHI_1+pi+pi/2), K1 + B1*sin(PHI_1+pi/2)], "--r", lw=2)
     pylab.gca().add_patch(cir)
-
-
-    #plot roots
     
+    #plot roots
     if length:
         R = array([float(i) for i in r[1:]])
         rx_TR = (R[0::2])*cos(-PHI_1) + (R[1::2])*sin(-PHI_1)  + H1;
         ry_TR = -(R[0::2])*sin(-PHI_1) + (R[1::2])*cos(-PHI_1) + K1;
-
-        print "rx_TR=", rx_TR
-        print "ry_TR=", ry_TR
         plot(rx_TR, ry_TR, "og", ms=ms, lw=2)
     
     cir = Ellipse(xy=(H2,K2), width=2*A2, height=2*B2, angle=PHI_2*180/pi,  alpha =.2, fc='b', lw=3)
-    #plot([H2+ A2*cos(PHI_2 + pi), H2 + A2*cos(PHI_2)], [K2+ A2*sin(PHI_2+pi), K2 + A2*sin(PHI_2)], "--b", lw=2)
-    #plot([H2+ B2*cos(PHI_2+pi+pi/2), H2 + B2*cos(PHI_2+pi/2)], [K2+ B2*sin(PHI_2+pi+pi/2), K2 + B2*sin(PHI_2+pi/2)], "--b", lw=2)
-    #plot(H2, K2, "ob", ms=ms)
+
     pylab.gca().add_patch(cir)
     pylab.axis('scaled')
-    pylab.title("case %d"%(Id))
+    pylab.title(r"$%d,\; A_1= %.3f,\; A_2= %.3f,\;A_{12}= %.3f,\; \epsilon=%.3f$"%(index, area[1], area[2], area[3], area[5]))
 
     pylab.grid()
-    
-    figname = "cases/case%.3d.png"%(Id)
-     
+
+    figname = os.path.join(DIR, "case%.3d.png"%(Id))
     pylab.savefig(figname)
-    print "---> ", figname
+    print ("---> %s"%figname)
     #pylab.show()
     pylab.clf()
-
-
-
-
-
-
-

@@ -31,13 +31,6 @@ K2 = -offset + np.random.random_sample( (num, ) ) * ampl # [-offset, ampl+1 -pff
 PHI_2 = -np.pi + np.random.random_sample( (num, ) ) * 2* np.pi # [-pi, pi)
 
 
-# print "A1=",A1
-# print "A1>B1?",all(A1>B1)
-# print "B1=",B1
-# print "H1=",H1
-# print "K1=",K1
-# print "PHI_1=", PHI_1
-
 for i in range(num):
     #id A1 B1 H1 K1 PHI_1 A2 B2 H2 K2 PHI_2
     print >>f, "%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f"%(i,A1[i], B1[i], H1[i], K1[i], PHI_1[i], A2[i], B2[i], H2[i], K2[i], PHI_2[i])
