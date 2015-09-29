@@ -1,4 +1,4 @@
-0;95;0c/*
+/*
  *  Roots3And4.c
  *
  *  Utility functions to find cubic and quartic roots,
