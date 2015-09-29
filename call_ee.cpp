@@ -1,40 +1,35 @@
 #include <stdio.h>
-
-#include<time.h>
-#include <sys/time.h>
 #include <iostream>
+#include <string.h>
 
 
-#include <deque>
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/point_xy.hpp>
-#include <boost/geometry/geometries/polygon.hpp>
-#include <boost/geometry/io/wkt/wkt.hpp>
-#include <boost/foreach.hpp>
-#include <boost/geometry/geometries/adapted/c_array.hpp>
-#include "program_constants.h"
+#define USING_BOOST 1   // change this to 0 if boost is not installed
 
 
-typedef boost::geometry::model::d2::point_xy<double,        
+#if defined(_WIN64) || defined(_WIN32)
+    #include<time.h>
+#else
+    #include <sys/time.h>
+#endif
+
+
+#if USING_BOOST 
+  #include <boost/geometry.hpp>
+  #include <boost/geometry/geometries/point_xy.hpp>
+  #include <boost/geometry/geometries/polygon.hpp>
+  #include <boost/foreach.hpp>
+  #include <boost/geometry/geometries/adapted/c_array.hpp>
+  typedef boost::geometry::model::d2::point_xy<double,        
                                              boost::geometry::cs::cartesian> point_2d;
-typedef boost::geometry::model::polygon<point_2d> polygon_2d;
-using namespace std;
-using namespace boost::geometry;
+  typedef boost::geometry::model::polygon<point_2d> polygon_2d;
+  using namespace boost::geometry;
+  const int n = 20;
+#endif
 
+#include "solvers.h"
+#include "program_constants.h"	//-- error message codes and constants
 
-#define MIN(a,b) ((a<b)?a:b)
-#define MAX(a,b) ((a<b)?b:a)
-
-const int n = 20;
-
-double ellipse_ellipse_overlap (double PHI_1, double A1, double B1, 
-                                double H1, double K1, double PHI_2, 
-                                double A2, double B2, double H2, double K2, 
-                                double X[4], double Y[4], int * nroots,
-                                int *rtnCode, int choice); 
-//choice=1: use gsl_poly_complex_solve()
-//choice=2: use Andreas Steiner's gsl_poly_complex_solve_quartic()
-                             
+int output = GSL; //output only GSL or TOMS
 
 //putting current date in a filename
 //http://stackoverflow.com/questions/5138913/c-putting-current-date-in-a-filename
@@ -56,6 +51,7 @@ void  setFileName(char * name)
 }
 
 //convert ellipse to polygon
+#if USING_BOOST
 int ellipse2poly(float PHI_1, float A1, float B1, float H1, float K1, polygon_2d * po)
 {
     //using namespace boost::geometry;
@@ -118,6 +114,7 @@ float getOverlapingAreaPoly(polygon_2d poly, polygon_2d poly2)
     }
     return overAreaPoly;
 }
+#endif
 
 // real timestamping
 double get_time(void)
@@ -131,8 +128,8 @@ int main (int argc, char ** argv)
 {
     double A1, B1, H1, K1, PHI_1;
     double A2, B2, H2, K2, PHI_2;
-    double area;
-    int rtn;
+    double area[5] = {0,0,0,0,0}; 
+    int rtn[5] = {0,0,0,0,0};
     if (argc < 2)
     {
         printf("Usage: %s inputfile\n exit...\n", argv[0]);
@@ -143,14 +140,16 @@ int main (int argc, char ** argv)
     printf ("Calling ellipse_ellipse_overlap.c\n\n");
 
     int MAXITER = 1, i; //MAXITER: to compare the run-time of poly- and analytical solution.
-    double t_se, t_fe;
-    double t_sp, t_fp;
-
+    double t_end[5] = {0,0,0,0,0}; 
+    double t_start[5] = {0,0,0,0,0};
+    float times[5] = {0,0,0,0,0};
+#if USING_BOOST
     polygon_2d poly, poly2;
-    float areaPoly;
-    float eps = 0.0001, err;
-    float time_e = 0;
-    float time_p = 0;
+    float eps = 0.0001, err[5] = {0,0,0,0,0};
+    float meanErr[5] = {0,0,0,0,0};
+#endif
+
+
     //float Re, Rp, Oe, Op;	
 
     char inputFile[100] = "";
@@ -168,8 +167,8 @@ int main (int argc, char ** argv)
     FILE * gf; // resultFile
     FILE * hf; // rootsFile
     int isc, id;
-    int counter=0;
-    float meanErr = 0;
+    int counter = 0;
+
     for(i=0;i<MAXITER;i++)
     {
         f = fopen(inputFile, "r");
@@ -197,15 +196,17 @@ int main (int argc, char ** argv)
         //fgets(dummy, 255, f); //ignore first line. depends on file      
         fprintf(hf, "#roots: id x0 \ty0 \tx1 \ty1  x2 \ty2 ...\n");
         //fprintf(gf, "#no\t area_1\t\t area_2\t\t area_ellipse\t area_polygon\t err\n");
-        double x[4], y[4];
-        int nroots;
+        double x_gsl[4], y_gsl[4];
+        double x_toms[4], y_toms[4];
+        double x_gems[4], y_gems[4];
+        int nroots_gsl, nroots_toms, nroots_gems;
 
         
         while (1){
             isc = fscanf(f,"%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",&id, &A1, &B1, &H1, &K1, &PHI_1, &A2, &B2, &H2, &K2, &PHI_2); 
             
             if(isc != 11){
-                // printf("isc=%d\n",isc);
+                printf("read end of line (isc=%d). break.\n", isc);
                 break;
             }
             // printf("id=%d,  A1=%f,  B1=%f,  H1=%f,  K1=%f,  PHI_1=%f,  A2=%f,  B2=%f,  H2=%f,  K2=%f,  PHI_2=%f\n",id, A1, B1, H1, K1, PHI_1, A2, B2, H2, K2, PHI_2);
@@ -215,41 +216,80 @@ int main (int argc, char ** argv)
                 PHI_1 = PHI_1 *180.0/pi;
                 PHI_2 = PHI_2 *180.0/pi;
             }
-//---------------------------------------
-            
-            t_se = get_time();
-            area = ellipse_ellipse_overlap (PHI_1, A1, B1, H1, K1,
-                                            PHI_2, A2, B2, H2, K2, x, y, &nroots, &rtn, choice);
-            t_fe = get_time();
 
-            time_e += (t_fe - t_se)*1000;
-             ellipse2poly(PHI_1, A1, B1, H1, K1, &poly);
-             ellipse2poly(PHI_2, A2, B2, H2, K2, &poly2);
-             t_sp = get_time();
-             areaPoly = getOverlapingAreaPoly(poly, poly2);
-            t_fp = get_time();
-            time_p += (t_fp - t_sp)*1000;
-                    
-            err = (fabs(areaPoly)<eps)?0.0:fabs(areaPoly-area)/areaPoly;
-            meanErr += err;
+//======================== Using GSL ====================
+            t_start[GSL] = get_time();
+            area[GSL] = ellipse_ellipse_overlap_gsl (PHI_1, A1, B1, H1, K1,
+                                            PHI_2, A2, B2, H2, K2, x_gsl, y_gsl, &nroots_gsl, &rtn[GSL], choice);
+            t_end[GSL] = get_time();
+            times[GSL] += (t_end[GSL] - t_start[GSL])*1000;
+//======================== Using TOMS ====================
+            t_start[TOMS] = get_time();
+            area[TOMS] = ellipse_ellipse_overlap_netlibs (PHI_1, A1, B1, H1, K1,
+                                            PHI_2, A2, B2, H2, K2, x_toms, y_toms, &nroots_toms, &rtn[TOMS]);
+            t_end[TOMS] = get_time();
+            times[TOMS] += (t_end[TOMS] - t_start[TOMS])*1000;
+//======================== Using GEMS ====================
+            t_start[GEMS] = get_time();
+            area[GEMS] = ellipse_ellipse_overlap_gems (PHI_1, A1, B1, H1, K1,
+                                            PHI_2, A2, B2, H2, K2, x_gems, y_gems, &nroots_gems, &rtn[GEMS]);
+            t_end[GEMS] = get_time();
+            times[GEMS] += (t_end[GEMS] - t_start[GEMS])*1000;
+//========================================================
+
+
+#if USING_BOOST
+            ellipse2poly(PHI_1, A1, B1, H1, K1, &poly);
+            ellipse2poly(PHI_2, A2, B2, H2, K2, &poly2);
+            t_start[BOOST] = get_time();
+            area[BOOST] = getOverlapingAreaPoly(poly, poly2);
+            t_end[BOOST] = get_time();
+            times[BOOST] += (t_end[BOOST] - t_start[BOOST])*1000;
+//========================================================
+            err[GSL] = (fabs(area[GSL])<eps)?fabs(area[BOOST]): fabs (area[BOOST]-area[GSL])/area[GSL];
+            meanErr[GSL] += err[GSL];
+//========================================================
+            err[TOMS] = (fabs(area[TOMS])<eps)?fabs(area[BOOST]) : fabs(area[BOOST]-area[TOMS])/area[TOMS];
+            meanErr[TOMS] += err[TOMS];
+//========================================================
+            err[GEMS] = (fabs(area[GEMS])<eps)?fabs(area[BOOST]) : fabs(area[BOOST]-area[GEMS])/area[GEMS];
+            meanErr[GEMS] += err[GEMS];
+//========================================================
+#endif
             counter++;
-            //Re = area/(pi*A2*B2 + pi*A1*B1 - area);
-            //Rp = areaPoly/(pi*A2*B2 + pi*A1*B1 - areaPoly);
-                    
-            //Oe = area/(MIN(pi*A2*B2,pi*A1*B1));
-            //Op = areaPoly/(MIN(pi*A2*B2,pi*A1*B1));
 
             // output roots
             fprintf(hf, " %d ",id);
+            if(output==GSL)
+            {
+                  for(i=0; i<nroots_gsl; i++)
+                        fprintf(hf, "  %f  %f  ", x_gsl[i], y_gsl[i]);
+                  fprintf(hf, "\n");
 
-           for(i=0; i<nroots; i++)
-                fprintf(hf, "  %f  %f  ", x[i], y[i]);
-            fprintf(hf, "\n");
+            }
+            else if (output == TOMS){
+
+                  for(i=0; i<nroots_toms; i++)
+                        fprintf(hf, "  %f  %f  ", x_toms[i], y_toms[i]);
+                  fprintf(hf, "\n");
+
+            }
+
+
 
             //output results
-            fprintf(gf, "%d    %10.4f    %10.4f    %10.4f    %10.4f    %10.4f\n", id, pi*A1*B1, pi*A2*B2, area, areaPoly, err);
-        
-            printf ("Case %d: area = %15.8f, return_value = %d, PolyArea = %15.8f (rel_err=%f)\n", id, area, rtn, areaPoly, err);
+
+#if USING_BOOST
+            fprintf(gf, "%d    %10.4f    %10.4f    %10.4f    %10.4f    %10.4f\n", id, pi*A1*B1, pi*A2*B2, area[output], area[BOOST], err[output]);
+#else
+            fprintf(gf, "%d    %10.4f    %10.4f    %10.4f    %10.4f    %10.4f\n", id, pi*A1*B1, pi*A2*B2, area[output], -1., -1.);
+#endif
+            // printf("------------------------------------------\n");
+            // printf ("Case %d: PolyArea  = %1.8f\n", id, area[BOOST]);
+            // printf ("\tarea_gsl  = %8.8f, ret = %3d, err = %3f\n", area[GSL], rtn[GSL], err[GSL]);
+            // printf ("\tarea_toms = %8.8f, ret = %3d, err = %3f\n", area[TOMS], rtn[TOMS], err[TOMS]);
+            // printf ("\tarea_gems = %8.8f, ret = %3d, err = %3f\n", area[GEMS], rtn[GEMS], err[GEMS]);
+            
             //printf("=====================================================================================\n");
                     
             ////////////////////////////////////////////////////////////////////////
@@ -260,11 +300,32 @@ int main (int argc, char ** argv)
         fclose(gf);
         fclose(hf);
     }//MAXITER
-    printf("\nrun time: %d cases. Analytical solution = %8.4lf [ms] |  Polygon approximation = %8.4lf [ms]\n", counter, time_e, time_p);
+    printf("------------------------------------------\n");
+    printf("run time for %d cases:\n", counter);
+#if USING_BOOST
+    printf("\tUsing GSL   = %8.4lf [ms], mean error = %.10f\n", times[GSL], meanErr[GSL]/counter); 
+           printf("\tUsing TOMS  = %8.4lf [ms], mean error = %.10f\n", times[TOMS], meanErr[TOMS]/counter);
+    printf("\tUsing GEMS  = %8.4lf [ms], mean error = %.10f\n", times[GEMS], meanErr[GEMS]/counter);
+    printf("\tUsing Boost = %8.4lf [ms]\n", times[BOOST]);
+
+#else
+    printf("\tUsing GSL   = %8.4lf [ms]\n", times[GSL]);
+    printf("\tUsing TOMS  = %8.4lf [ms]\n", times[TOMS]);
+    printf("\tUsing GEMS  = %8.4lf [ms]\n", times[GEMS]);
+#endif
+    printf("------------------------------------------\n");
     printf("run python plot.py %s  %s to plot the results\n", inputFile, rootsFile);
-    fprintf(stderr, "%d  %f %f %f\n", n, time_e, time_p, meanErr/counter);
-    return rtn; 
+
+
+    printf("return %d\n", rtn[GSL]);
+    return rtn[output]; 
 }
+
+
+
+
+
+
 
 
 

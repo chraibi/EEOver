@@ -40,3 +40,17 @@
 #define EPS     	   				   +1.0E-05
 #define pi     (2.0*asin (1.0))	//-- a maximum-precision value of pi
 #define twopi  (2.0*pi)     	//-- a maximum-precision value of 2*pi
+
+
+
+enum boolean { GSL = 0, TOMS, GEMS, BOOST };
+
+
+
+
+
+
+
+
+
+

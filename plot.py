@@ -6,6 +6,8 @@ from math import pi
 import os, shutil
 from sys import argv
 
+
+
 if len(argv)< 4:
     print ("Usage: python %s ellipseDataFile rootsFile resultsFile"%argv[0])
     sys.exit()

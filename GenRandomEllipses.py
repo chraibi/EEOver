@@ -3,12 +3,12 @@
 
 import numpy as np
 
-num = 1000 # num of random cases
+num = int(1e6) # num of random cases
 ampl = 10.
 offset = -5
 
 
-filename = "testcases.txt"
+filename = "testcases_1M.txt"
 print ">>%s (num=%d)"%(filename, num)
 f = open(filename, "w")
 
