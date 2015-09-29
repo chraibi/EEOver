@@ -35,19 +35,19 @@ int output = GSL; //output only GSL or TOMS
 //http://stackoverflow.com/questions/5138913/c-putting-current-date-in-a-filename
 void  setFileName(char * name)
 {  
-    time_t now;
-    struct tm *today;  
-    char date[9];
-    //get current date  
-    time(&now);  
-    today = localtime(&now);
+    // time_t now;
+    // struct tm *today;  
+    // char date[9];
+    // //get current date  
+    // time(&now);  
+    // today = localtime(&now);
     //print it in DD_MM_YY_H_M_S format.
    
     // strftime(date, 25, "%d_%m_%Y_%H_%M_%S", today);
     // strcat(name, "_");
     // strcat(name, date);
-
     strcat(name, ".txt");
+    printf("name: %s\n", name);
 }
 
 //convert ellipse to polygon
@@ -155,7 +155,6 @@ int main (int argc, char ** argv)
     char inputFile[100] = "";
     strcpy(inputFile,argv[1]);//"testcases.txt"; 
     char resultFile[100] = "results";
-    
     setFileName(resultFile);
     printf("resultFile = <%s>\n", resultFile);
 
@@ -206,7 +205,7 @@ int main (int argc, char ** argv)
             isc = fscanf(f,"%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",&id, &A1, &B1, &H1, &K1, &PHI_1, &A2, &B2, &H2, &K2, &PHI_2); 
             
             if(isc != 11){
-                printf("read end of line (isc=%d). break.\n", isc);
+                  printf("read end of line (isc=%d | counter=%d)\n", isc, counter);
                 break;
             }
             // printf("id=%d,  A1=%f,  B1=%f,  H1=%f,  K1=%f,  PHI_1=%f,  A2=%f,  B2=%f,  H2=%f,  K2=%f,  PHI_2=%f\n",id, A1, B1, H1, K1, PHI_1, A2, B2, H2, K2, PHI_2);
