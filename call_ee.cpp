@@ -320,19 +320,3 @@ int main (int argc, char ** argv)
     printf("return %d\n", rtn[GSL]);
     return rtn[output]; 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

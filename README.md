@@ -54,3 +54,5 @@ The solver of the quartic function is the central part of the code. Actually, tw
 - and [gsl_poly_complex_solve_quartic()](http://www.network-theory.co.uk/download/gslextras/Quartic/00README.txt) from Andrew Steiner.          
 
 The second one is faster, however fails to calculate accuratly the roots of [test_5](test5.txt)..
+
+@todo: Implement the algorithm from the paper [The fast quartic solver](http://www.sciencedirect.com/science/article/pii/S0377042710002128) by Peter Strobach.
