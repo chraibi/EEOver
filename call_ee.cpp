@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <iostream>
 #include <string.h>
@@ -130,12 +131,14 @@ int main (int argc, char ** argv)
     double A2, B2, H2, K2, PHI_2;
     double area[5] = {0,0,0,0,0}; 
     int rtn[5] = {0,0,0,0,0};
-    if (argc < 2)
+    if (argc < 3)
     {
-        printf("Usage: %s inputfile\n exit...\n", argv[0]);
+        printf("Usage: %s inputfile choice (1 || 2)\n exit...\n", argv[0]);
         exit(-1);
     }
     int choice;
+    // choice = 1 -> use gsl_poly_complex_solve()
+    // choice = 2 -> gsl_poly_complex_solve_quartic()
     choice = atoi(argv[2]);
     printf ("Calling ellipse_ellipse_overlap.c\n\n");
 
