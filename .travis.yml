@@ -19,5 +19,6 @@ notifications:
 
   
 script:
+  - pwd
   - make        
   - ./overlap testcases.txt 1
