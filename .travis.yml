@@ -1,0 +1,21 @@
+language: cpp
+compiler:
+- g++
+
+branches:
+  only:
+  - master
+  
+notifications:
+   email:
+     recipients:
+       - mohcine@chraibi.de
+     on_success: change
+     on_failure: always
+
+before_script:
+  - rm overlap roots.txt resuts.txt
+  
+script:
+  - make        
+  - ./overlap testcases.txt 1

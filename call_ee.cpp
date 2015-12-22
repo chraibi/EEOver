@@ -316,9 +316,14 @@ int main (int argc, char ** argv)
     printf("\tUsing GEMS  = %8.4lf [ms]\n", times[GEMS]);
 #endif
     printf("------------------------------------------\n");
-    printf("run python plot.py %s  %s to plot the results\n", inputFile, rootsFile);
+    printf("\tpython plot.py %s %s %s\n to plot the results\n", inputFile, rootsFile, resultFile);
+    printf("------------------------------------------\n");
+    printf("return %f\n", meanErr[GSL]/counter);
+    
+    if (meanErr[GSL]/counter < 0.01)
+          return EXIT_SUCCESS;
+    else
+          return EXIT_FAILURE;
+                
 
-
-    printf("return %d\n", rtn[GSL]);
-    return rtn[output]; 
 }
