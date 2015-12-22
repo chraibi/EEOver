@@ -7,7 +7,6 @@ branches:
   - master
 
 before_script:
-  - sudo apt-add-repository ppa:timklingt/ppa
   - sudo apt-get update
   - sudo apt-get install libboost1.55-all-dev
 
