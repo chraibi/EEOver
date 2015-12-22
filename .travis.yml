@@ -13,8 +13,6 @@ notifications:
      on_success: change
      on_failure: always
 
-before_script:
-  - rm overlap roots.txt resuts.txt
   
 script:
   - make        

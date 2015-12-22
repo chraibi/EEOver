@@ -21,3 +21,7 @@ tmp/
 *.out
 *.app
 *.png
+
+# produced result files
+ roots.txt
+ resuts.txt
