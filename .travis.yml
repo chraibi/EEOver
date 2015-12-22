@@ -1,15 +1,13 @@
+os: osx
 language: cpp
-compiler:
-- g++
 
 branches:
   only:
   - master
 
 before_script:
-  - sudo apt-get update -qq
-  - sudo apt-get install libboost-all-dev
-
+  - brew install boost
+  
 notifications:
    email:
      recipients:
