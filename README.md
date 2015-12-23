@@ -1,5 +1,5 @@
-## Status
-[![Build Status](https://travis-ci.org/chraibi/EEOver.svg?branch=master)](https://travis-ci.org/chraibi/EEOver)
+[![Build Status](https://travis-ci.org/chraibi/EEOver.svg?branch=master)](https://travis-ci.org/chraibi/EEOver) [![GitHub license](https://img.shields.io/badge/license-GPL-blue.svg)](https://raw.githubusercontent.com/chraibi/EEOver/master/LICENSE) [![GitHub issues](https://img.shields.io/github/issues/chraibi/EEOver.svg)](https://github.com/chraibi/EEOver/issues) [![Twitter](https://img.shields.io/twitter/url/https/github.com/chraibi/EEOver.svg?style=social)](https://twitter.com/intent/tweet?text=Wow:&url=%5Bobject%20Object%5D)
+
 ## Ellipse-Ellipse overlap area:
 This program calculates the overlapping area of two arbitrary ellipses. It implements
 the algorithm published in this [paper](http://link.springer.com/article/10.1007%2Fs00791-013-0214-3). See also the available [preprint](http://arxiv.org/abs/1106.3787).
