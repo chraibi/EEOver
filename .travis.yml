@@ -13,12 +13,12 @@ before_script:
   - sudo pip install pyyaml
   - sudo brew unlink pyenv
   - sudo brew install pyenv
-  - sudo eval "$(pyenv init -)"
-  - sudo pyenv install 2.7.6
-  - sudo pyenv global 2.7.6
-  - sudo pyenv rehash
+  - eval "$(pyenv init -)"
+  - pyenv install 2.7.6
+  - pyenv global 2.7.6
+  - pyenv rehash
   - sudo pip install cpp-coveralls
-  - sudo pyenv rehash
+  - pyenv rehash
   
 notifications:
    email:
