@@ -6,10 +6,17 @@ branches:
   - master
 
 before_script:
+  - brew update
   - brew unlink boost
   - brew install boost
   - brew install gsl
-  - pip install --user cpp-coveralls
+  - brew install pyenv
+  - eval "$(pyenv init -)"
+  - pyenv install 2.7.6
+  - pyenv global 2.7.6
+  - pyenv rehash
+  - pip install cpp-coveralls
+  - pyenv rehash
   
 notifications:
    email:
