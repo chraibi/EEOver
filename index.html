@@ -1,37 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="en-us">
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-dark.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <meta charset="UTF-8">
     <title>Eeover by chraibi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
-
   <body>
-    <div id="container">
-      <div class="inner">
+    <section class="page-header">
+      <h1 class="project-name">Eeover</h1>
+      <h2 class="project-tagline">Ellipse-Ellipse overlap area</h2>
+      <a href="https://github.com/chraibi/EEOver" class="btn">View on GitHub</a>
+      <a href="https://github.com/chraibi/EEOver/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/chraibi/EEOver/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-        <header>
-          <h1>Eeover</h1>
-          <h2>Ellipse-Ellipse overlap area</h2>
-        </header>
-
-        <section id="downloads" class="clearfix">
-          <a href="https://github.com/chraibi/EEOver/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
-          <a href="https://github.com/chraibi/EEOver/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
-          <a href="https://github.com/chraibi/EEOver" id="view-on-github" class="button"><span>View on GitHub</span></a>
-        </section>
-
-        <hr>
-
-        <section id="main_content">
-          <p><a href="https://travis-ci.org/chraibi/EEOver"><img src="https://travis-ci.org/chraibi/EEOver.svg?branch=master" alt="Build Status"></a> <a href="https://raw.githubusercontent.com/chraibi/EEOver/master/LICENSE"><img src="https://img.shields.io/badge/license-GPL-blue.svg" alt="GitHub license"></a> <a href="https://twitter.com/intent/tweet?text=Wow:&amp;url=%5Bobject%20Object%5D"><img src="https://img.shields.io/twitter/url/https/github.com/chraibi/EEOver.svg?style=social" alt="Twitter"></a></p>
+    <section class="main-content">
+      <p><a href="https://travis-ci.org/chraibi/EEOver"><img src="https://travis-ci.org/chraibi/EEOver.svg?branch=master" alt="Build Status"></a> <a href="https://raw.githubusercontent.com/chraibi/EEOver/master/LICENSE"><img src="https://img.shields.io/badge/license-GPL-blue.svg" alt="GitHub license"></a> <a href="https://twitter.com/intent/tweet?text=Wow:&amp;url=%5Bobject%20Object%5D"><img src="https://img.shields.io/twitter/url/https/github.com/chraibi/EEOver.svg?style=social" alt="Twitter"></a></p>
 
 <h2>
 <a id="ellipse-ellipse-overlap-area" class="anchor" href="#ellipse-ellipse-overlap-area" aria-hidden="true"><span class="octicon octicon-link"></span></a>Ellipse-Ellipse overlap area:</h2>
@@ -43,29 +31,35 @@ the algorithm published in this <a href="http://link.springer.com/article/10.100
 <a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage:</h3>
 
 <ul>
-<li>compile the code:
-<code>make</code>
-</li>
+<li>compile the code:</li>
 </ul>
+
+<pre><code>make
+</code></pre>
 
 <p>This should produce an executable (overlap)</p>
 
 <ul>
-<li>run the executable with an input-file:</li>
+<li>run the executable with an input-file and an id:</li>
 </ul>
 
-<blockquote>
-<p>./overlap inputfile id</p>
-</blockquote>
+<pre><code>./overlap inputfile id
+</code></pre>
 
-<p>(<code>id</code> is 1 or 2 to choose between two different quartic solvers)</p>
+<p><code>id</code> is 1 or 2 to choose between two different quartic solvers.</p>
 
 <ul>
-<li>This should produce two output-files:</li>
-<li><p><strong>result-File</strong>: The naming is in this form <del><code>results_Day_Month_Year_Hour_Min_Second.txt</code></del>
-<code>results.txt</code></p></li>
-<li><p><strong>root-File</strong>: The naming is in this form <del><code>roots_Day_Month_Year_Hour_Min_Second.txt</code></del>
-<code>roots.txt</code></p></li>
+<li>This should produce two output-files:
+
+<ul>
+<li>
+<strong>result-File</strong> called <code>results.txt</code>
+</li>
+<li>
+<strong>root-File</strong> called <code>roots.txt</code>
+</li>
+</ul>
+</li>
 </ul>
 
 <h3>
@@ -75,7 +69,8 @@ the algorithm published in this <a href="http://link.springer.com/article/10.100
 <li>the <strong>input-File</strong> should be in the following format</li>
 </ul>
 
-<p><code>id A1 B1 H1 K1 PHI_1 A2 B2 H2 K2 PHI_2</code></p>
+<pre><code>id A1 B1 H1 K1 PHI_1 A2 B2 H2 K2 PHI_2
+</code></pre>
 
 <p>(11 columns)</p>
 
@@ -86,25 +81,29 @@ the algorithm published in this <a href="http://link.springer.com/article/10.100
 <strong>results-File</strong> is in the following format: </li>
 </ul>
 
-<p><code>id area-Ellipse1 (=pi.A1.B1) areaEllipse2 (=pi.A2.B2) OverlapAreaAnalytical OverlapAreaPolynomial rel_err</code></p>
+<pre><code>id area-Ellipse1 (=pi.A1.B1) areaEllipse2 (=pi.A2.B2) OverlapAreaAnalytical OverlapAreaPolynomial rel_err
+</code></pre>
 
 <ul>
 <li>
 <strong>roots-File</strong> contains the coordinates of the intersection points (if any):</li>
 </ul>
 
-<p><code>id x0 y0 x1 y1 x2 y2 ...</code></p>
+<pre><code>id x0 y0 x1 y1 x2 y2 ...
+</code></pre>
 
-<p>this file is used by the plot-script (<code>plot.py</code>)</p>
+<p>this file is used by the <a href="plot.py">plot-script</a></p>
 
 <h3>
 <a id="how-to-visualize-the-results" class="anchor" href="#how-to-visualize-the-results" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to visualize the results:</h3>
 
-<blockquote>
-<p>python plot.py inputFile rootsFile resultsFile</p>
-</blockquote>
+<p>It is of great value to visualize the results and check visually if the computed intersection points are correct. 
+Call the script <code>plot.py</code> as follows</p>
 
-<p>That would produce in the directory <strong>./cases/</strong> a couple of  png's</p>
+<pre><code>python plot.py inputFile rootsFile resultsFile
+</code></pre>
+
+<p>That would produce in the directory <strong>./cases/</strong> a couple of  png's.</p>
 
 <h3>
 <a id="requirements" class="anchor" href="#requirements" aria-hidden="true"><span class="octicon octicon-link"></span></a>Requirements:</h3>
@@ -131,14 +130,16 @@ the overlap-area of polygonized ellipses is calculated with Boost.polygon.</li>
 <p>The second one is faster, however fails to calculate accuratly the roots of <a href="test5.txt">test_5</a>..</p>
 
 <p><a href="https://github.com/todo" class="user-mention">@todo</a>: Implement the algorithm from the paper <a href="http://www.sciencedirect.com/science/article/pii/S0377042710002128">The fast quartic solver</a> by Peter Strobach.</p>
-        </section>
 
-        <footer>
-          Eeover is maintained by <a href="https://github.com/chraibi">chraibi</a><br>
-          This page was generated by <a href="https://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
-        </footer>
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/chraibi/EEOver">Eeover</a> is maintained by <a href="https://github.com/chraibi">chraibi</a>.</span>
 
-                  <script type="text/javascript">
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+            <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
           </script>
@@ -149,7 +150,5 @@ the overlap-area of polygonized ellipses is calculated with Boost.polygon.</li>
             } catch(err) {}
           </script>
 
-      </div>
-    </div>
   </body>
 </html>
