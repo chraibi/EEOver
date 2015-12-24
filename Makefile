@@ -1,5 +1,5 @@
 CC      = g++
-CFLAGS  = -Wall -g -coverage
+CFLAGS  = -Wall -g -fprofile-arcs -ftest-coverage
 LDFLAGS = -lgsl -lgslcblas
 
 OBJ = call_ee.o solvers.o zsolve_quartic.o Roots3And4.o
