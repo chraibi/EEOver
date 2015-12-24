@@ -1,6 +1,6 @@
 CC      = g++
-CFLAGS  = -Wall -g -fprofile-arcs -ftest-coverage
-LDFLAGS = -lgsl -lgslcblas
+CFLAGS  = -Wall -g --coverage
+LDFLAGS = -lgsl -lgslcblas --coverage
 
 OBJ = call_ee.o solvers.o zsolve_quartic.o Roots3And4.o
 
@@ -13,3 +13,5 @@ prog: $(OBJ)
 .PHONY: clean
 clean:
 	rm -rf $(BIN) $(OBJ)
+gcov:
+	gcovr -r . --html -o coverage.html --html-details
