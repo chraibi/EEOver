@@ -10,6 +10,7 @@ before_script:
   - brew unlink boost
   - brew install boost
   - brew install gsl
+  - pip install pyyaml
   - brew unlink pyenv
   - brew install pyenv
   - eval "$(pyenv init -)"
