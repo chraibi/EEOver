@@ -1,0 +1,27 @@
+# Object files
+*.o
+*.ko
+
+cases/
+overlap
+tmp/
+
+# Libraries
+*.lib
+*.a
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.png
+
+# produced result files
+ roots.txt
+ resuts.txt
