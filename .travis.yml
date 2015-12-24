@@ -6,19 +6,19 @@ branches:
   - master
 
 before_script:
-  - brew update
-  - brew unlink boost
-  - brew install boost
-  - brew install gsl
-  - pip install pyyaml
-  - brew unlink pyenv
-  - brew install pyenv
-  - eval "$(pyenv init -)"
-  - pyenv install 2.7.6
-  - pyenv global 2.7.6
-  - pyenv rehash
-  - pip install cpp-coveralls
-  - pyenv rehash
+  - sudo brew update
+  - sudo brew unlink boost
+  - sudo brew install boost
+  - sudo brew install gsl
+  - sudo pip install pyyaml
+  - sudo brew unlink pyenv
+  - sudo brew install pyenv
+  - sudo eval "$(pyenv init -)"
+  - sudo pyenv install 2.7.6
+  - sudo pyenv global 2.7.6
+  - sudo pyenv rehash
+  - sudo pip install cpp-coveralls
+  - sudo pyenv rehash
   
 notifications:
    email:
