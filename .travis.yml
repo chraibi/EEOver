@@ -9,6 +9,7 @@ before_script:
   - brew unlink boost
   - brew install boost
   - brew install gsl
+  - pip install --user cpp-coveralls
   
 notifications:
    email:
@@ -21,3 +22,6 @@ notifications:
 script:
   - make        
   - ./overlap testcases.txt 1
+
+after_success:
+  - coveralls --exclude lib --exclude tests --gcov-options '\-lp'
