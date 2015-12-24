@@ -40,7 +40,7 @@ This should produce an executable (overlap)
 
 `id x0 y0 x1 y1 x2 y2 ...`
 
-this file is used by the plot-script (`plot.py`)
+this file is used by the [plot-script](plot.py)
 
 ### How to visualize the results: 
 > python plot.py inputFile rootsFile resultsFile
