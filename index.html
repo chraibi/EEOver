@@ -1,43 +1,50 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
-    <meta charset='utf-8'>
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-dark.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
     <title>Eeover by chraibi</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-dark.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
   </head>
-
   <body>
-    <div id="container">
-      <div class="inner">
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/chraibi/EEOver">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/chraibi/EEOver/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/chraibi/EEOver/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
 
-        <header>
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
           <h1>Eeover</h1>
-          <h2>Ellipse-Ellipse overlap area</h2>
-        </header>
+          <p>Ellipse-Ellipse overlap area</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/chraibi">chraibi</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+        </div>
 
-        <section id="downloads" class="clearfix">
-          <a href="https://github.com/chraibi/EEOver/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
-          <a href="https://github.com/chraibi/EEOver/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
-          <a href="https://github.com/chraibi/EEOver" id="view-on-github" class="button"><span>View on GitHub</span></a>
-        </section>
-
-        <hr>
-
-        <section id="main_content">
-          <p><a href="https://travis-ci.org/chraibi/EEOver"><img src="https://travis-ci.org/chraibi/EEOver.svg?branch=master" alt="Build Status"></a> <a href="https://raw.githubusercontent.com/chraibi/EEOver/master/LICENSE"><img src="https://img.shields.io/badge/license-GPL-blue.svg" alt="GitHub license"></a> <a href="https://twitter.com/intent/tweet?text=Wow:&amp;url=%5Bobject%20Object%5D"><img src="https://img.shields.io/twitter/url/https/github.com/chraibi/EEOver.svg?style=social" alt="Twitter"></a></p>
+        <p><a href="https://travis-ci.org/chraibi/EEOver"><img src="https://travis-ci.org/chraibi/EEOver.svg?branch=master" alt="Build Status"></a> <a href="https://raw.githubusercontent.com/chraibi/EEOver/master/LICENSE"><img src="https://img.shields.io/badge/license-GPL-blue.svg" alt="GitHub license"></a> <a href="https://twitter.com/intent/tweet?text=Wow:&amp;url=%5Bobject%20Object%5D"><img src="https://img.shields.io/twitter/url/https/github.com/chraibi/EEOver.svg?style=social" alt="Twitter"></a></p>
 
 <h2>
 <a id="ellipse-ellipse-overlap-area" class="anchor" href="#ellipse-ellipse-overlap-area" aria-hidden="true"><span class="octicon octicon-link"></span></a>Ellipse-Ellipse overlap area:</h2>
 
 <p>This program calculates the overlapping area of two arbitrary ellipses. It implements
-the algorithm published in this <a href="http://link.springer.com/article/10.1007%2Fs00791-013-0214-3">paper</a>. See also the available <a href="http://arxiv.org/abs/1106.3787">preprint</a>.</p>
+the algorithm published in this <a href="http://link.springer.com/article/10.1007%2Fs00791-013-0214-3">paper</a>. See also the available <a href="http://arxiv.org/abs/1106.3787">preprint</a>. The page if this project is <a href="http://chraibi.github.io/EEOver/">here</a>.</p>
 
 <h3>
 <a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage:</h3>
@@ -49,7 +56,7 @@ the algorithm published in this <a href="http://link.springer.com/article/10.100
 <pre><code>make
 </code></pre>
 
-<p>This should produce an executable (overlap)</p>
+<p>This should produce an executable (<code>overlap</code>)</p>
 
 <ul>
 <li>run the executable with an input-file and an id:</li>
@@ -58,20 +65,12 @@ the algorithm published in this <a href="http://link.springer.com/article/10.100
 <pre><code>./overlap inputfile id
 </code></pre>
 
-<p><code>id</code> is 1 or 2 to choose between two different quartic solvers.</p>
+<p>(<code>id</code> is 1 or 2 to choose between two different quartic solvers)</p>
 
 <ul>
-<li>This should produce two output-files:
-
-<ul>
-<li>
-<strong>result-File</strong> called <code>results.txt</code>
-</li>
-<li>
-<strong>root-File</strong> called <code>roots.txt</code>
-</li>
-</ul>
-</li>
+<li>This should produce two output-files:</li>
+<li><p><strong>result-File</strong>: <code>results.txt</code></p></li>
+<li><p><strong>root-File</strong>: <code>roots.txt</code></p></li>
 </ul>
 
 <h3>
@@ -84,16 +83,27 @@ the algorithm published in this <a href="http://link.springer.com/article/10.100
 <pre><code>id A1 B1 H1 K1 PHI_1 A2 B2 H2 K2 PHI_2
 </code></pre>
 
-<p>(11 columns)</p>
+<p><strong>(11 columns)</strong></p>
 
-<p><code>id</code> is a running number, <code>Ax</code>  and <code>Bx</code> are semi-axes of the one ellipse with the center coordinates <code>(Hx, Kx)</code> and the inclination with respect to the x-axis <code>Phi_x</code> <em>(x in {1, 2})</em></p>
+<ul>
+<li>
+<code>id</code> is a running number</li>
+<li>
+<code>Ax</code>  and</li>
+<li>
+<code>Bx</code> are semi-axes of the one ellipse with the center coordinates </li>
+<li>
+<code>(Hx, Kx)</code> </li>
+<li>and the inclination with respect to the x-axis <code>Phi_x</code> <em>(x in {1, 2})</em>
+</li>
+</ul>
 
 <ul>
 <li>
 <strong>results-File</strong> is in the following format: </li>
 </ul>
 
-<pre><code>id areaE1 (=pi.A1.B1) areaE2 (=pi.A2.B2) OverlapAreaAnalytical OverlapAreaPolynomial rel_err
+<pre><code>id area-Ellipse1 (=pi.A1.B1) areaEllipse2 (=pi.A2.B2) OverlapAreaAnalytical OverlapAreaPolynomial rel_err
 </code></pre>
 
 <ul>
@@ -104,18 +114,15 @@ the algorithm published in this <a href="http://link.springer.com/article/10.100
 <pre><code>id x0 y0 x1 y1 x2 y2 ...
 </code></pre>
 
-<p>this file is used by the <a href="https://github.com/chraibi/EEOver/blob/master/plot.py">plot-script</a></p>
+<p>this file is used by the <a href="plot.py">plot-script</a></p>
 
 <h3>
 <a id="how-to-visualize-the-results" class="anchor" href="#how-to-visualize-the-results" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to visualize the results:</h3>
 
-<p>It is of great value to visualize the results and check visually if the computed intersection points are correct. 
-Call the script <code>plot.py</code> as follows</p>
-
 <pre><code>python plot.py inputFile rootsFile resultsFile
 </code></pre>
 
-<p>That would produce in the directory <strong>./cases/</strong> a couple of  png's.</p>
+<p>That would produce in the directory <strong>./cases/</strong> a couple of  png's</p>
 
 <h3>
 <a id="requirements" class="anchor" href="#requirements" aria-hidden="true"><span class="octicon octicon-link"></span></a>Requirements:</h3>
@@ -124,8 +131,12 @@ Call the script <code>plot.py</code> as follows</p>
 <li>&gt; <a href="http://www.gnu.org/software/gsl/">GSL</a>: to solve the quartic equations </li>
 <li>
 <em>(optional)</em> &gt; <a href="http://www.boost.org/doc/libs/1_54_0/libs/polygon/doc/index.htm">Boost.polygon</a>: to compare the results of this code, 
-the overlap-area of polygonized ellipses is calculated with Boost.polygon.</li>
+the overlap-area of polygonized ellipses is calculated with Boost.polygon. In case you don't have <code>boost</code> installed (and don't want to)
+then you need to set <code>USING_BOOST</code> in <a href="call_ee.cpp">call_ee.cpp</a> to 0</li>
 </ul>
+
+<pre><code>#define USING_BOOST 0
+</code></pre>
 
 <h3>
 <a id="remarks" class="anchor" href="#remarks" aria-hidden="true"><span class="octicon octicon-link"></span></a>Remarks:</h3>
@@ -139,17 +150,21 @@ the overlap-area of polygonized ellipses is calculated with Boost.polygon.</li>
 </li>
 </ul>
 
-<p>The second one is faster, however fails to calculate accurately the roots of <a href="test5.txt">test_5</a>..</p>
+<p>The second one is faster, however fails to calculate accurately the roots of <a href="test5.txt">test_5</a>.</p>
 
-<p><a href="https://github.com/todo" class="user-mention">@todo</a>: Implement the algorithm from the paper <a href="http://www.sciencedirect.com/science/article/pii/S0377042710002128">The fast quartic solver</a> by Peter Strobach.</p>
-        </section>
+<h3>
+<a id="to-do" class="anchor" href="#to-do" aria-hidden="true"><span class="octicon octicon-link"></span></a>To do:</h3>
 
-        <footer>
-          Eeover is maintained by <a href="https://github.com/chraibi">chraibi</a><br>
-          This page was generated by <a href="https://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
-        </footer>
+<ul>
+<li>[ ] Implement the algorithm from the paper <a href="http://www.sciencedirect.com/science/article/pii/S0377042710002128">The fast quartic solver</a> by Peter Strobach.</li>
+<li>[ ] Try <a href="http://numpi.dm.unipi.it/mpsolve-2.2/doc.htm">MPSolve</a>. This library adds some dependencies though.</li>
+<li>[ ] Add more tests to cover all the cases.</li>
+</ul>
+      </section>
 
-                  <script type="text/javascript">
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+              <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
           </script>
@@ -160,7 +175,5 @@ the overlap-area of polygonized ellipses is calculated with Boost.polygon.</li>
             } catch(err) {}
           </script>
 
-      </div>
-    </div>
   </body>
 </html>
