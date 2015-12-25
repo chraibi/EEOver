@@ -10,15 +10,6 @@ before_script:
   - sudo brew unlink boost
   - sudo brew install boost
   - sudo brew install gsl
-  - sudo pip install pyyaml
-  - sudo brew unlink pyenv
-  - sudo brew install pyenv
-  - eval "$(pyenv init -)"
-  - pyenv install 2.7.6
-  - pyenv global 2.7.6
-  - pyenv rehash
-  - sudo pip install cpp-coveralls
-  - pyenv rehash
   
 notifications:
    email:
@@ -33,4 +24,4 @@ script:
   - ./overlap testcases.txt 1
 
 after_success:
-  - coveralls --exclude lib --exclude tests --gcov-options '\-lp'
+  - bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
