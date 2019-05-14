@@ -2,9 +2,9 @@
 
 ## Ellipse-Ellipse overlap area:
 This program calculates the overlapping area of two arbitrary ellipses. It implements
-the algorithm published in this [paper](http://link.springer.com/article/10.1007%2Fs00791-013-0214-3). See also the available [preprint](http://arxiv.org/abs/1106.3787). The page if this project is [here](http://chraibi.github.io/EEOver/).
+the algorithm published in this [paper](http://link.springer.com/article/10.1007%2Fs00791-013-0214-3). See also the available [preprint](http://arxiv.org/abs/1106.3787). 
 
-
+![](case010.png)
 
 ### Usage: 
 - compile the code:
