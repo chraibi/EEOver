@@ -1,4 +1,6 @@
-[![GitHub license](https://img.shields.io/badge/license-GPL-blue.svg)](https://raw.githubusercontent.com/chraibi/EEOver/master/LICENSE)  [![Build Status](https://travis-ci.org/chraibi/EEOver.svg?branch=master)](https://travis-ci.org/chraibi/EEOver)  [![codecov.io](https://codecov.io/github/chraibi/EEOver/coverage.svg?branch=master)](https://codecov.io/github/chraibi/EEOver?branch=master) [![Twitter](https://img.shields.io/twitter/url/https/github.com/chraibi/EEOver.svg?style=social)](https://twitter.com/intent/tweet?text=Wow:&url=%5Bobject%20Object%5D) 
+[![GitHub license](https://img.shields.io/badge/license-GPL-blue.svg)](https://raw.githubusercontent.com/chraibi/EEOver/master/LICENSE)  [![DOI](https://zenodo.org/badge/13856870.svg)](https://zenodo.org/badge/latestdoi/13856870)
+
+
 
 ## Ellipse-Ellipse overlap area:
 This program calculates the overlapping area of two arbitrary ellipses. It implements
